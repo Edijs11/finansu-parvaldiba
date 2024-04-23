@@ -4,6 +4,8 @@ import { User } from '@prisma/client';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import Modal from '../components/modal';
+import { LoginLink, useKindeBrowserClient } from '@kinde-oss/kinde-auth-nextjs';
+import CreateSavingGoalForm from './createSavingGoalForm';
 // import UserComponent from './components/IncomeComponent';
 
 interface SavingGoal {
@@ -13,23 +15,30 @@ interface SavingGoal {
   saved: number;
   startDate: Date;
   endDate: Date;
-  user: User;
+  userId: number;
 }
 
 export default function SavingGoal() {
+  const { isAuthenticated, isLoading } = useKindeBrowserClient();
   const apiUrl = 'http://localhost:3000';
   const [savingGaols, setSavingGoals] = useState<SavingGoal[]>([]);
-  const [newSavingGoal, setNewSavingGoal] = useState({
+  const [newSavingGoal, setNewSavingGoal] = useState<SavingGoal>({
+    savingId: 1,
     name: '',
     amount: 0,
     saved: 0,
-    startDate: '',
-    endDate: '',
+    startDate: new Date(),
+    endDate: new Date(),
+    userId: 1,
   });
-  const [updateSavingGoal, setUpdateSavingGoal] = useState({
-    id: '',
+  const [updateSavingGoal, setUpdateSavingGoal] = useState<SavingGoal>({
+    savingId: 1,
     name: '',
-    email: '',
+    amount: 0,
+    saved: 0,
+    startDate: new Date(),
+    endDate: new Date(),
+    userId: 1,
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -45,6 +54,20 @@ export default function SavingGoal() {
     fetchSavingGoals();
   }, [newSavingGoal]);
 
+  const formatDate = (dateString: Date) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}.${month}.${year}.`;
+  };
+
+  const formatedSavingGoals = savingGaols.map((savingGaol) => ({
+    ...savingGaol,
+    startDate: formatDate(savingGaol.startDate),
+    endDate: formatDate(savingGaol.endDate),
+  }));
+
   const createSavingGoal = async () => {
     try {
       const response = await axios.post(
@@ -53,11 +76,13 @@ export default function SavingGoal() {
       );
       setSavingGoals([response.data, ...savingGaols]);
       setNewSavingGoal({
+        savingId: 1,
         name: '',
         amount: 0,
         saved: 0,
-        startDate: '',
-        endDate: '',
+        startDate: new Date(),
+        endDate: new Date(),
+        userId: 1,
       });
     } catch (error) {
       console.error('Error creating saving goal:', error);
@@ -75,13 +100,14 @@ export default function SavingGoal() {
     }
   };
 
-  return (
+  if (isLoading) return <div>Loading..</div>;
+  return isAuthenticated ? (
     <main className="flex min-h-screen flex-col items-center justify-between p-24">
       <div className="overflow-x-auto">
         {isModalOpen && (
           <Modal onClose={() => setIsModalOpen(false)}>
-            <h1>Add Savings Goal</h1>
-            <form onSubmit={createSavingGoal} className="flex flex-col mt-2 ">
+            <CreateSavingGoalForm />
+            {/* <form onSubmit={createSavingGoal} className="flex flex-col mt-2 ">
               <p>Name:</p>
               <input
                 type="text"
@@ -120,11 +146,11 @@ export default function SavingGoal() {
               <input
                 type="date"
                 className="text-black"
-                value={newSavingGoal.startDate}
+                value={newSavingGoal.startDate.toISOString().split('T')[0]}
                 onChange={(e) =>
                   setNewSavingGoal({
                     ...newSavingGoal,
-                    startDate: e.target.value,
+                    startDate: new Date(e.target.value),
                   })
                 }
               />
@@ -132,11 +158,11 @@ export default function SavingGoal() {
               <input
                 type="date"
                 className="text-black"
-                value={newSavingGoal.endDate}
+                value={newSavingGoal.endDate.toISOString().split('T')[0]}
                 onChange={(e) =>
                   setNewSavingGoal({
                     ...newSavingGoal,
-                    endDate: e.target.value,
+                    endDate: new Date(e.target.value),
                   })
                 }
               />
@@ -147,7 +173,7 @@ export default function SavingGoal() {
                 Add Goal
               </button>
               <button onClick={() => setIsModalOpen(true)}></button>
-            </form>
+            </form> */}
           </Modal>
         )}
 
@@ -170,7 +196,7 @@ export default function SavingGoal() {
               </tr>
             </thead>
             <tbody>
-              {savingGaols.map((savingGoal) => (
+              {formatedSavingGoals.map((savingGoal) => (
                 <tr key={savingGoal.savingId}>
                   <td className="px-4 py-2">{savingGoal.name}</td>
                   <td className="px-4 py-2">{savingGoal.amount}</td>
@@ -199,5 +225,10 @@ export default function SavingGoal() {
         </div>
       </div>
     </main>
+  ) : (
+    <div className="flex flex-col items-center justify-between">
+      <h1 className="mt-6">You must be logged in!</h1>
+      <LoginLink className="mt-4">Login</LoginLink>
+    </div>
   );
 }

@@ -1,25 +1,8 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+import { expenseShema } from '@/app/lib/shemas';
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
-
-export const expenseShema = z.object({
-  name: z.string().min(3).max(20),
-  description: z.string(),
-  amount: z.number().min(0),
-  date: z.coerce.date(),
-  type: z.enum([
-    'FOOD_GROCERIES',
-    'TRANSPORT',
-    'HEALTHCARE',
-    'INSURANCE',
-    'HOUSING',
-    'ENTERTAINMENT',
-    'OTHER',
-  ]),
-  userId: z.number().optional(),
-});
 
 export async function GET() {
   const { getUser } = getKindeServerSession();

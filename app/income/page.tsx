@@ -15,36 +15,52 @@ import { redirect } from 'next/navigation';
 import axios from 'axios';
 import Frame from '../components/frame';
 import Modal from '../components/modal';
-import { useKindeBrowserClient } from '@kinde-oss/kinde-auth-nextjs';
+import { LoginLink, useKindeBrowserClient } from '@kinde-oss/kinde-auth-nextjs';
 import IncomeForm from './createIncomeForm';
+import CreateIncomeForm from './createIncomeForm';
+import EditIncomeForm from './editIncomeForm';
+import { useKindeAuth } from '@kinde-oss/kinde-auth-nextjs';
 
 interface Income {
   incomeId: number;
   name: string;
   amount: number;
   date: Date;
-  user: User;
+  userId: number;
   type: incomeType;
 }
 
 export default function Income() {
-  const { isAuthenticated } = useKindeBrowserClient();
+  const { isAuthenticated, isLoading } = useKindeBrowserClient();
 
   const apiUrl = 'http://localhost:3000';
   const [incomes, setIncomes] = useState<Income[]>([]);
-  const [newIncome, setNewIncome] = useState({
+  const [newIncome, setNewIncome] = useState<Income>({
+    incomeId: 1,
     name: '',
     amount: 0,
-    date: '',
+    date: new Date(),
     type: 'SALARY',
+    userId: 1,
   });
-  const [updateIncome, setUpdateIncome] = useState({
+  const [updateIncome, setUpdateIncome] = useState<Income>({
+    incomeId: 1,
     name: '',
     amount: 0,
-    date: '',
+    date: new Date(),
     type: 'SALARY',
+    userId: 1,
   });
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+
+  // const handleEditClick = (id) => {
+  //   setIsCreateModalOpen(true);
+  //   return (
+  //     <Modal onClose={() => setIsCreateModalOpen(false)}>
+  //       <EditIncomeForm id={id} />
+  //     </Modal>
+  //   );
+  // };
 
   // const handleSubmit = (event: any) => {
   //   event.preventDefault();
@@ -75,7 +91,7 @@ export default function Income() {
     fetchIncome();
   }, [newIncome]);
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString: Date) => {
     const date = new Date(dateString);
     const day = String(date.getDate()).padStart(2, '0');
     const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -83,15 +99,27 @@ export default function Income() {
     return `${day}.${month}.${year}.`;
   };
 
-  const createIncome = async () => {
-    try {
-      const response = await axios.post(`${apiUrl}/api/income`, newIncome);
-      setIncomes([response.data, ...incomes]);
-      setNewIncome({ name: '', amount: 0, date: '', type: incomeType.SALARY });
-    } catch (error) {
-      console.error('Error creating income:', error);
-    }
-  };
+  const formatedIncome = incomes.map((income) => ({
+    ...income,
+    date: formatDate(income.date),
+  }));
+
+  // const createIncome = async () => {
+  //   try {
+  //     const response = await axios.post(`${apiUrl}/api/income`, newIncome);
+  //     setIncomes([response.data, ...incomes]);
+  //     setNewIncome({
+  //       incomeId: 1,
+  //       name: '',
+  //       amount: 0,
+  //       date: new Date(),
+  //       type: incomeType.SALARY,
+  //       userId: 1,
+  //     });
+  //   } catch (error) {
+  //     console.error('Error creating income:', error);
+  //   }
+  // };
 
   const editIncome = async (id: number) => {
     try {
@@ -138,12 +166,10 @@ export default function Income() {
   //   }
   // };
 
-  return (
+  if (isLoading) return <div className="animate-spin w-5 h-5" />;
+  return isAuthenticated ? (
     <div className="flex flex-col items-center justify-between">
-      {isCreateModalOpen && (
-        <Modal onClose={() => setIsCreateModalOpen(false)}>
-          <IncomeForm />
-          {/* <h1>Add Income</h1>
+      {/* <h1>Add Income</h1>
           <form onSubmit={createIncome} className="flex flex-col mt-2">
             <p>Name:</p>
             <input
@@ -167,16 +193,22 @@ export default function Income() {
             <input
               type="date"
               className="text-black"
-              value={newIncome.date}
+              value={newIncome.date.toISOString().split('T')[0]}
               onChange={(e) =>
-                setNewIncome({ ...newIncome, date: e.target.value })
+                setNewIncome({
+                  ...newIncome,
+                  date: new Date(e.target.value),
+                })
               }
             />
             <p className="mt-2">Type:</p>
             <select
               className="text-black"
               onChange={(e) =>
-                setNewIncome({ ...newIncome, type: e.target.value })
+                setNewIncome({
+                  ...newIncome,
+                  type: e.target.value as incomeType,
+                })
               }
             >
               {Object.values(incomeType).map((selectedType, index) => (
@@ -193,6 +225,9 @@ export default function Income() {
             </button>
             <button onClick={() => setIsCreateModalOpen(true)}></button>
           </form> */}
+      {isCreateModalOpen && (
+        <Modal onClose={() => setIsCreateModalOpen(false)}>
+          <CreateIncomeForm />
         </Modal>
       )}
       <div className="mt-6">
@@ -200,7 +235,7 @@ export default function Income() {
           <BarChart
             width={400}
             height={250}
-            data={incomes}
+            data={formatedIncome}
             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
           >
             <CartesianGrid strokeDasharray="3 3" />
@@ -230,17 +265,15 @@ export default function Income() {
             </tr>
           </thead>
           <tbody>
-            {incomes.map((income) => (
+            {formatedIncome.map((income) => (
               <tr key={income.incomeId}>
                 <td className="px-4 py-2">{income.name}</td>
                 <td className="px-4 py-2">{income.amount}</td>
                 <td className="px-4 py-2">{income.type}</td>
-                <td className="px-4 py-2">
-                  {formatDate(income.date.toString())}
-                </td>
+                <td className="px-4 py-2">{income.date}</td>
                 <td className="px-4 py-2">
                   <button
-                    onClick={() => editIncome(income.incomeId)}
+                    // onClick={() => handleEdit(income.incomeId)}
                     className="bg-orange-300 hover:bg-orange-400 rounded text-white p-2 w-[70px]"
                   >
                     Edit
@@ -259,6 +292,11 @@ export default function Income() {
           </tbody>
         </table>
       </div>
+    </div>
+  ) : (
+    <div className="flex flex-col items-center justify-between">
+      <h1 className="mt-6">You must be logged in!</h1>
+      <LoginLink className="mt-4">Login</LoginLink>
     </div>
   );
 }

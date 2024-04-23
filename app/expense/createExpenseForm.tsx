@@ -1,30 +1,30 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { incomeType } from '@prisma/client';
+import { expenseType } from '@prisma/client';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { incomeShema } from '../lib/shemas';
+import { expenseShema } from '../lib/shemas';
 import { useState } from 'react';
 import axios from 'axios';
 
-type TCreateIncomeShema = z.infer<typeof incomeShema>;
+type TCreateExpenseShema = z.infer<typeof expenseShema>;
 
-export default function CreateIncomeForm() {
+export default function CreateExpenseForm() {
   const apiUrl = 'http://localhost:3000';
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<TCreateIncomeShema>({
-    resolver: zodResolver(incomeShema),
+  } = useForm<TCreateExpenseShema>({
+    resolver: zodResolver(expenseShema),
   });
 
-  const onSubmit: SubmitHandler<TCreateIncomeShema> = async (data) => {
+  const onSubmit: SubmitHandler<TCreateExpenseShema> = async (data) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      await axios.post(`${apiUrl}/api/income`, data);
+      await axios.post(`${apiUrl}/api/expense`, data);
       reset();
     } catch {
       new Error('this is bad');
@@ -33,7 +33,7 @@ export default function CreateIncomeForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col mt-2">
-      <h1 className="text-xl place-self-center">Add Income</h1>
+      <h1 className="text-xl place-self-center">Add Expense</h1>
       <p className="mt-4">Name:</p>
       <input
         {...register('name')}
@@ -45,6 +45,17 @@ export default function CreateIncomeForm() {
       {errors.name && (
         <p className="text-red-500">{`${errors.name.message}`}</p>
       )}
+      <p className="mt-4">Description:</p>
+      <input
+        {...register('description')}
+        type="text"
+        placeholder="Description"
+        className="text-black rounded-sm"
+        required
+      />
+      {/* {errors.name && (
+        <p className="text-red-500">{`${errors.description.message}`}</p>
+      )} */}
 
       <p className="mt-2">Amount:</p>
       <input
@@ -66,7 +77,7 @@ export default function CreateIncomeForm() {
       />
       <p className="mt-2">Type:</p>
       <select {...register('type')} className="text-black rounded-sm" required>
-        {Object.values(incomeType).map((selectedType, index) => (
+        {Object.values(expenseType).map((selectedType, index) => (
           <option key={index} value={selectedType}>
             {selectedType}
           </option>
@@ -76,7 +87,7 @@ export default function CreateIncomeForm() {
         type="submit"
         className="p-2 bg-blue-500 hover:bg-blue-600 rounded text-white mt-6"
       >
-        Add Income
+        Add Expense
       </button>
       {/* <button onClick={() => setIsCreateModalOpen(true)}></button> */}
     </form>

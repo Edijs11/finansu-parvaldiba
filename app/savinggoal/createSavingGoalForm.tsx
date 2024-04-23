@@ -4,27 +4,27 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { incomeType } from '@prisma/client';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { incomeShema } from '../lib/shemas';
+import { incomeShema, savingGoalShema } from '../lib/shemas';
 import { useState } from 'react';
 import axios from 'axios';
 
-type TCreateIncomeShema = z.infer<typeof incomeShema>;
+type TCreateSavingGoalShema = z.infer<typeof savingGoalShema>;
 
-export default function CreateIncomeForm() {
+export default function CreateSavingGoalForm() {
   const apiUrl = 'http://localhost:3000';
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<TCreateIncomeShema>({
-    resolver: zodResolver(incomeShema),
+  } = useForm<TCreateSavingGoalShema>({
+    resolver: zodResolver(savingGoalShema),
   });
 
-  const onSubmit: SubmitHandler<TCreateIncomeShema> = async (data) => {
+  const onSubmit: SubmitHandler<TCreateSavingGoalShema> = async (data) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      await axios.post(`${apiUrl}/api/income`, data);
+      await axios.post(`${apiUrl}/api/savinggoal`, data);
       reset();
     } catch {
       new Error('this is bad');
@@ -33,7 +33,7 @@ export default function CreateIncomeForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col mt-2">
-      <h1 className="text-xl place-self-center">Add Income</h1>
+      <h1 className="text-xl place-self-center">Add Saving Goal</h1>
       <p className="mt-4">Name:</p>
       <input
         {...register('name')}
@@ -57,26 +57,37 @@ export default function CreateIncomeForm() {
         <p className="text-red-500">{`${errors.amount.message}`}</p>
       )}
 
-      <p className="mt-2">Date:</p>
+      <p className="mt-2">Saved:</p>
       <input
-        {...register('date')}
+        {...register('saved', { valueAsNumber: true })}
+        type="number"
+        placeholder="Saved"
+        className="text-black rounded-sm"
+      />
+      {errors.saved && (
+        <p className="text-red-500">{`${errors.saved.message}`}</p>
+      )}
+
+      <p className="mt-2">Start Date:</p>
+      <input
+        {...register('startDate')}
         type="date"
         className="text-black rounded-sm"
         required
       />
-      <p className="mt-2">Type:</p>
-      <select {...register('type')} className="text-black rounded-sm" required>
-        {Object.values(incomeType).map((selectedType, index) => (
-          <option key={index} value={selectedType}>
-            {selectedType}
-          </option>
-        ))}
-      </select>
+      <p className="mt-2">End Date:</p>
+      <input
+        {...register('endDate')}
+        type="date"
+        className="text-black rounded-sm"
+        required
+      />
+
       <button
         type="submit"
         className="p-2 bg-blue-500 hover:bg-blue-600 rounded text-white mt-6"
       >
-        Add Income
+        Add Saving Goal
       </button>
       {/* <button onClick={() => setIsCreateModalOpen(true)}></button> */}
     </form>

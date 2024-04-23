@@ -6,14 +6,6 @@ import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 
-// export const incomeShema = z.object({
-//   name: z.string().min(3).max(30, 'Name must be 3 to 30 characters long'),
-//   amount: z.number().positive().min(1),
-//   date: z.coerce.date(),
-//   type: z.nativeEnum(incomeType),
-//   userId: z.number(),
-// });
-
 export async function GET() {
   const { getUser } = getKindeServerSession();
   const user = await getUser();

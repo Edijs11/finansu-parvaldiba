@@ -1,17 +1,8 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+import { savingGoalShema } from '@/app/lib/shemas';
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
-
-export const savingGoalShema = z.object({
-  name: z.string().min(3).max(30),
-  amount: z.number().min(0),
-  saved: z.number().min(0),
-  startDate: z.coerce.date(),
-  endDate: z.coerce.date(),
-  userId: z.number().optional(),
-});
 
 export async function GET() {
   const { getUser } = getKindeServerSession();

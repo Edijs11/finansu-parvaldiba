@@ -2,8 +2,8 @@ const { PrismaClient } = require('@prisma/client');
 
 const prisma = new PrismaClient();
 import { NextRequest, NextResponse } from 'next/server';
-import { expenseShema } from '../../expense/route';
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
+import { expenseShema } from '@/app/lib/shemas';
 
 export async function GET(
   req: NextRequest,

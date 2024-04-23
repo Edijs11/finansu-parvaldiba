@@ -1,6 +1,6 @@
 'use client';
 
-import { useKindeBrowserClient } from '@kinde-oss/kinde-auth-nextjs';
+import { LoginLink, useKindeBrowserClient } from '@kinde-oss/kinde-auth-nextjs';
 import { expenseType, User } from '@prisma/client';
 import axios from 'axios';
 import { redirect } from 'next/navigation';
@@ -16,6 +16,7 @@ import {
   XAxis,
   YAxis,
 } from 'recharts';
+import CreateExpenseForm from './createExpenseForm';
 
 interface Expense {
   expenseId: number;
@@ -24,22 +25,22 @@ interface Expense {
   amount: number;
   date: Date;
   type: expenseType;
+  userId: number;
 }
 
 export default function Expense() {
-  // const { user } = useKindeBrowserClient();
-  // if (!user) {
-  //   redirect('api/auth/login');
-  // }
+  const { isAuthenticated, isLoading } = useKindeBrowserClient();
 
   const apiUrl = 'http://localhost:3000';
   const [expenses, setExpenses] = useState<Expense[]>([]);
-  const [newExpense, setNewExpense] = useState({
+  const [newExpense, setNewExpense] = useState<Expense>({
+    expenseId: 1,
     name: '',
     description: '',
     amount: 0,
-    date: '',
+    date: new Date(),
     type: 'FOOD_GROCERIES',
+    userId: 1,
   });
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   // const [updateExpense, setUpdateExpense] = useState({
@@ -59,16 +60,31 @@ export default function Expense() {
     fetchExpense();
   }, [newExpense]);
 
+  const formatDate = (dateString: Date) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}.${month}.${year}.`;
+  };
+
+  const formatedExpenses = expenses.map((expense) => ({
+    ...expense,
+    date: formatDate(expense.date),
+  }));
+
   const createExpense = async () => {
     try {
       const response = await axios.post(`${apiUrl}/api/expense`, newExpense);
       setExpenses([response.data, ...expenses]);
       setNewExpense({
+        expenseId: 1,
         name: '',
         description: '',
         amount: 0,
-        date: '',
-        type: '',
+        date: new Date(),
+        type: 'FOOD_GROCERIES',
+        userId: 1,
       });
     } catch (error) {
       console.error('Error creating expense:', error);
@@ -84,11 +100,13 @@ export default function Expense() {
     }
   };
 
-  return (
+  if (isLoading) return <div>Loading..</div>;
+  return isAuthenticated ? (
     <div className="flex flex-col items-center justify-between">
       {isCreateModalOpen && (
         <Modal onClose={() => setIsCreateModalOpen(false)}>
-          <h1>Add Income</h1>
+          <CreateExpenseForm />
+          {/* <h1>Add Expense</h1>
           <form onSubmit={createExpense} className="flex flex-col mt-2">
             <p>Name:</p>
             <input
@@ -123,17 +141,20 @@ export default function Expense() {
             <input
               type="date"
               placeholder="Date"
-              value={newExpense.date}
+              value={newExpense.date.toISOString().split('T')[0]}
               className="text-black"
               onChange={(e) =>
-                setNewExpense({ ...newExpense, date: e.target.value })
+                setNewExpense({ ...newExpense, date: new Date(e.target.value) })
               }
             />
             <p className="mt-2">Type:</p>
             <select
               className="text-black"
               onChange={(e) =>
-                setNewExpense({ ...newExpense, type: e.target.value })
+                setNewExpense({
+                  ...newExpense,
+                  type: e.target.value as expenseType,
+                })
               }
             >
               {Object.values(expenseType).map((selectedType, index) => (
@@ -148,16 +169,16 @@ export default function Expense() {
             >
               Add Expense
             </button>
-          </form>
+          </form> */}
         </Modal>
       )}
 
       <div className="mt-6">
-        <Frame title="Income">
+        <Frame title="Expenses">
           <BarChart
             width={400}
             height={250}
-            data={expenses}
+            data={formatedExpenses}
             margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
             // className="absolute inset-0"
           >
@@ -189,7 +210,7 @@ export default function Expense() {
             </tr>
           </thead>
           <tbody>
-            {expenses.map((expense) => (
+            {formatedExpenses.map((expense) => (
               <tr key={expense.expenseId}>
                 <td className="px-4 py-2">{expense.name}</td>
                 <td className="px-4 py-2">{expense.description}</td>
@@ -214,6 +235,11 @@ export default function Expense() {
           </tbody>
         </table>
       </div>
+    </div>
+  ) : (
+    <div className="flex flex-col items-center justify-between">
+      <h1 className="mt-6">You must be logged in!</h1>
+      <LoginLink className="mt-4">Login</LoginLink>
     </div>
   );
 }

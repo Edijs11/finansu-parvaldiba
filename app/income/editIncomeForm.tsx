@@ -10,7 +10,7 @@ import axios from 'axios';
 
 type TCreateIncomeShema = z.infer<typeof incomeShema>;
 
-export default function CreateIncomeForm() {
+export default function EditIncomeForm(id: number) {
   const apiUrl = 'http://localhost:3000';
   const {
     register,
@@ -24,7 +24,7 @@ export default function CreateIncomeForm() {
   const onSubmit: SubmitHandler<TCreateIncomeShema> = async (data) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      await axios.post(`${apiUrl}/api/income`, data);
+      await axios.put(`${apiUrl}/api/income/${id}`, data);
       reset();
     } catch {
       new Error('this is bad');
@@ -33,8 +33,7 @@ export default function CreateIncomeForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col mt-2">
-      <h1 className="text-xl place-self-center">Add Income</h1>
-      <p className="mt-4">Name:</p>
+      <p>Name:</p>
       <input
         {...register('name')}
         type="text"

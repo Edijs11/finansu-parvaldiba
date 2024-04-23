@@ -4,6 +4,8 @@ import { incomeType, User } from '@prisma/client';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import Modal from '../components/modal';
+import { number } from 'zod';
+import { LoginLink, useKindeBrowserClient } from '@kinde-oss/kinde-auth-nextjs';
 // import UserComponent from './components/IncomeComponent';
 
 interface Debt {
@@ -13,18 +15,21 @@ interface Debt {
   saved: number;
   startDate: Date;
   endDate: Date;
-  user: User;
+  userId: number;
 }
 
 export default function Debt() {
+  const { isAuthenticated, isLoading } = useKindeBrowserClient();
   const apiUrl = 'http://localhost:3000';
   const [debts, setDebts] = useState<Debt[]>([]);
-  const [newDebt, setNewDebt] = useState({
+  const [newDebt, setNewDebt] = useState<Debt>({
+    debtId: 1,
     name: '',
     amount: 0,
     saved: 0,
-    startDate: '',
-    endDate: '',
+    startDate: new Date(),
+    endDate: new Date(),
+    userId: 1,
   });
   const [updateDebt, setUpdateDebt] = useState({
     name: '',
@@ -43,11 +48,33 @@ export default function Debt() {
     fetchDebt();
   }, [newDebt]);
 
+  const formatDate = (dateString: Date) => {
+    const date = new Date(dateString);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}.${month}.${year}.`;
+  };
+
+  const formatedDebts = debts.map((debt) => ({
+    ...debt,
+    startDate: formatDate(debt.startDate),
+    endDate: formatDate(debt.endDate),
+  }));
+
   const createDebt = async () => {
     try {
       const response = await axios.post(`${apiUrl}/api/debt`, newDebt);
       setDebts([response.data, ...debts]);
-      setNewDebt({ name: '', amount: 0, saved: 0, startDate: '', endDate: '' });
+      setNewDebt({
+        debtId: 1,
+        name: '',
+        amount: 0,
+        saved: 0,
+        startDate: new Date(),
+        endDate: new Date(),
+        userId: 1,
+      });
     } catch (error) {
       console.error('Error creating debt:', error);
     }
@@ -62,7 +89,8 @@ export default function Debt() {
     }
   };
 
-  return (
+  if (isLoading) return <div>Loading..</div>;
+  return isAuthenticated ? (
     <div className="flex min-h-screen flex-col items-center justify-between p-24">
       {isModalOpen && (
         <Modal onClose={() => setIsModalOpen(false)}>
@@ -98,18 +126,18 @@ export default function Debt() {
             <input
               type="date"
               className="text-black"
-              value={newDebt.startDate}
+              value={newDebt.startDate.toISOString().split('T')[0]}
               onChange={(e) =>
-                setNewDebt({ ...newDebt, startDate: e.target.value })
+                setNewDebt({ ...newDebt, startDate: new Date(e.target.value) })
               }
             />
             <p className="mt-2">End date:</p>
             <input
               type="date"
               className="text-black"
-              value={newDebt.endDate}
+              value={newDebt.endDate.toISOString().split('T')[0]}
               onChange={(e) =>
-                setNewDebt({ ...newDebt, endDate: e.target.value })
+                setNewDebt({ ...newDebt, endDate: new Date(e.target.value) })
               }
             />
             <button
@@ -141,7 +169,7 @@ export default function Debt() {
             </tr>
           </thead>
           <tbody>
-            {debts.map((debt) => (
+            {formatedDebts.map((debt) => (
               <tr key={debt.debtId}>
                 <td className="px-4 py-2">{debt.name}</td>
                 <td className="px-4 py-2">{debt.amount}</td>
@@ -166,6 +194,11 @@ export default function Debt() {
           </tbody>
         </table>
       </div>
+    </div>
+  ) : (
+    <div className="flex flex-col items-center justify-between">
+      <h1 className="mt-6">You must be logged in!</h1>
+      <LoginLink className="mt-4">Login</LoginLink>
     </div>
   );
 }
