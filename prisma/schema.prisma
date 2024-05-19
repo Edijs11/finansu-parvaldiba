@@ -14,24 +14,24 @@ datasource db {
 }
 
 model User {
-  id          Int    @id @default(autoincrement())
-  kindeId     String @unique
-  username    String? @unique
-  email       String @unique
+  id          Int          @id @default(autoincrement())
+  kindeId     String       @unique
+  username    String?      @unique
+  email       String       @unique
   amount      Float?
   incomes     Income[]
   expenses    Expense[]
   savingGoals SavingGoal[]
   debts       Debt[]
 }
-
+//float uz decimal
 model Income {
   incomeId Int        @id @default(autoincrement())
   name     String
   amount   Float
   date     DateTime
   type     incomeType
-  user     User @relation(fields: [userId], references: [id])
+  user     User       @relation(fields: [userId], references: [id])
   userId   Int
 }
 
@@ -39,8 +39,12 @@ enum incomeType {
   SALARY
   DIVIDENDS
   GOVERMENT_ASSISTANCE
+  GIFT
   REALASTATE
-  BUSSINES_INCOME
+  PROFIT_INCOME
+  INTEREST_INCOME
+  ROYALTY_INCOME
+  OTHER
 }
 
 model Expense {
@@ -50,38 +54,59 @@ model Expense {
   amount      Float
   date        DateTime
   type        expenseType
-  user        User @relation(fields: [userId], references: [id])
+  user        User        @relation(fields: [userId], references: [id])
   userId      Int
 }
 
 enum expenseType {
   FOOD_GROCERIES
+  UTILITIES
   TRANSPORT
   HEALTHCARE
   INSURANCE
   HOUSING
   ENTERTAINMENT
+  REPAIR
   OTHER
 }
 
 model SavingGoal {
-  savingId  Int      @id @default(autoincrement())
-  name      String
-  amount    Float
-  saved     Float
-  startDate DateTime
-  endDate   DateTime
-  user User @relation(fields: [userId], references: [id])
-  userId    Int
+  savingId     Int           @id @default(autoincrement())
+  name         String
+  amount       Float
+  saved        Float
+  startDate    DateTime
+  endDate      DateTime
+  user         User          @relation(fields: [userId], references: [id])
+  userId       Int
+  transactions Transaction[]
 }
 
 model Debt {
-  debtId    Int      @id @default(autoincrement())
-  name      String
-  amount    Float
-  saved     Float
-  startDate DateTime
-  endDate   DateTime
-  user User @relation(fields: [userId], references: [id])
-  userId Int
+  debtId        Int           @id @default(autoincrement())
+  name          String
+  amount        Float
+  saved         Float
+  startDate     DateTime
+  endDate       DateTime
+  interest_rate Int
+  user          User          @relation(fields: [userId], references: [id])
+  userId        Int
+  transactions  Transaction[]
+}
+//savinggoalId -> savingId //nez vai vajag vsp
+model Transaction {
+  transactionId Int             @id @default(autoincrement())
+  amount        Float
+  date          DateTime
+  type          TransactionType
+  savingGoal    SavingGoal?     @relation(fields: [savingGoalId], references: [savingId])
+  savingGoalId  Int?
+  debt          Debt?           @relation(fields: [debtId], references: [debtId])
+  debtId        Int?
+}
+
+enum TransactionType {
+  GOAL
+  DEBT
 }

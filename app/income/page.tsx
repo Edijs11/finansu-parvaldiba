@@ -1,27 +1,29 @@
 'use client';
 
-import { incomeType, User } from '@prisma/client';
-import React, { useEffect, useState } from 'react';
+import { incomeType } from '@prisma/client';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Bar,
   BarChart,
   CartesianGrid,
+  Cell,
   Legend,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from 'recharts';
-import { redirect } from 'next/navigation';
 import axios from 'axios';
 import Frame from '../components/frame';
 import Modal from '../components/modal';
+import DeleteModal from '../components/deleteModal';
 import { LoginLink, useKindeBrowserClient } from '@kinde-oss/kinde-auth-nextjs';
-import IncomeForm from './createIncomeForm';
 import CreateIncomeForm from './createIncomeForm';
 import EditIncomeForm from './editIncomeForm';
-import { useKindeAuth } from '@kinde-oss/kinde-auth-nextjs';
 
-interface Income {
+export interface Income {
   incomeId: number;
   name: string;
   amount: number;
@@ -30,10 +32,16 @@ interface Income {
   type: incomeType;
 }
 
-export default function Income() {
-  const { isAuthenticated, isLoading } = useKindeBrowserClient();
+// export interface IncomeProps {
+//   name: string;
+//   amount: number;
+//   date: Date;
+//   type: incomeType;
+// }
 
-  const apiUrl = 'http://localhost:3000';
+const Income = () => {
+  const { isAuthenticated, isLoading } = useKindeBrowserClient();
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const [incomes, setIncomes] = useState<Income[]>([]);
   const [newIncome, setNewIncome] = useState<Income>({
     incomeId: 1,
@@ -52,38 +60,42 @@ export default function Income() {
     userId: 1,
   });
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [incomeId, setIncomeId] = useState(0);
+  const [delId, setDelId] = useState<number>(0);
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
 
-  // const handleEditClick = (id) => {
-  //   setIsCreateModalOpen(true);
-  //   return (
-  //     <Modal onClose={() => setIsCreateModalOpen(false)}>
-  //       <EditIncomeForm id={id} />
-  //     </Modal>
-  //   );
-  // };
+  const incomeTypeColors: { [key in incomeType]: string } = {
+    [incomeType.SALARY]: '#96FF33',
+    [incomeType.DIVIDENDS]: '#FF5735',
+    [incomeType.GOVERMENT_ASSISTANCE]: '#1E7000',
+    [incomeType.GIFT]: '#96FF33',
+    [incomeType.REALASTATE]: '#8884d9',
+    [incomeType.PROFIT_INCOME]: '#8A5A31',
+    [incomeType.INTEREST_INCOME]: '#008DA9',
+    [incomeType.ROYALTY_INCOME]: '#FFA500',
+    [incomeType.OTHER]: '#D3D3D3',
+  };
+  incomes.sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
 
-  // const handleSubmit = (event: any) => {
-  //   event.preventDefault();
-  //   const formData = {
-  //     name: event.target.name.value,
-  //     amount: event.target.amount.value,
-  //     date: event.target.date.value,
-  //     type: event.target.type.value,
-  //   };
+  // const today = new Date();
+  // const from = new Date();
+  // from.setDate(today.getDate() - 30);
 
-  //   try {
-  //     incomeShema.parse(formData);
-  //     console.log('valid');
-  //   } catch (e) {
-  //     console.log(e);
-  //   }
-  // };
+  const handleEdit = (id: number) => {
+    setIsEditModalOpen(true);
+    setIncomeId(id);
+  };
 
   useEffect(() => {
     const fetchIncome = async () => {
       try {
         const response = await axios.get(`${apiUrl}/api/income`);
-        setIncomes(response.data.reverse());
+        setIncomes(response.data);
       } catch (error) {
         console.error('error fetching data:', error);
       }
@@ -99,27 +111,63 @@ export default function Income() {
     return `${day}.${month}.${year}.`;
   };
 
-  const formatedIncome = incomes.map((income) => ({
-    ...income,
-    date: formatDate(income.date),
-  }));
+  const formatedIncomes = useMemo(() => {
+    return incomes.map((income) => ({
+      ...income,
+      date: formatDate(income.date),
+    }));
+  }, [incomes]);
 
-  // const createIncome = async () => {
-  //   try {
-  //     const response = await axios.post(`${apiUrl}/api/income`, newIncome);
-  //     setIncomes([response.data, ...incomes]);
-  //     setNewIncome({
-  //       incomeId: 1,
-  //       name: '',
-  //       amount: 0,
-  //       date: new Date(),
-  //       type: incomeType.SALARY,
-  //       userId: 1,
-  //     });
-  //   } catch (error) {
-  //     console.error('Error creating income:', error);
-  //   }
+  const filterIncome = () => {
+    if (startDate && endDate) {
+      const filteredIncomes = incomes.filter(
+        (income) =>
+          new Date(income.date).getTime() >= new Date(startDate).getTime() &&
+          new Date(income.date).getTime() <= new Date(endDate).getTime()
+      );
+      console.log(filteredIncomes);
+      setIncomes(filteredIncomes);
+    }
+  };
+
+  // const handleResetDateFilter = () => {
+  //   setStartDate('');
+  //   setEndDate('');
   // };
+
+  const incomeTypeAndCount: { type: incomeType; amount: number }[] = [];
+
+  incomes.forEach((income) => {
+    const existingType = incomeTypeAndCount.findIndex(
+      (item) => item.type === income.type
+    );
+    if (existingType !== -1) {
+      incomeTypeAndCount[existingType].amount += income.amount;
+    } else {
+      incomeTypeAndCount.push({ type: income.type, amount: income.amount });
+    }
+  });
+
+  // const addIncome = (newIncome: Income) => {
+  //   setIncomes([...incomes, newIncome]);
+  // };
+
+  const createIncome = async (income: Income) => {
+    try {
+      const response = await axios.post(`${apiUrl}/api/income`, income);
+      setIncomes([response.data, ...incomes]);
+      setNewIncome({
+        incomeId: 1,
+        name: '',
+        amount: 0,
+        date: new Date(),
+        type: incomeType.SALARY,
+        userId: 1,
+      });
+    } catch (error) {
+      console.error('Error creating income:', error);
+    }
+  };
 
   const editIncome = async (id: number) => {
     try {
@@ -149,131 +197,178 @@ export default function Income() {
     } catch (error) {
       console.error('Error deleting income:', error);
     }
+    setConfirmDelete(false);
   };
 
-  // content={<CustomTooltip />}
-  // const CustomTooltip = ({ payload }) => {
-  //   if (payload && payload.label) {
-  //     return (
-  //       <div>
-  //         <p className="label">{`${label}: ${payload[0].value}`}</p>
-  //         <p>
-  //           income:
-  //           <span>{payload[0].value}</span>
-  //         </p>
-  //       </div>
-  //     );
-  //   }
-  // };
+  const handleDelete = (id: number) => {
+    setDelId(id);
+    setConfirmDelete(true);
+  };
 
-  if (isLoading) return <div className="animate-spin w-5 h-5" />;
+  var tooltip: string;
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (!active || !tooltip) return null;
+    for (const bar of payload) {
+      if (bar.dataKey === tooltip) {
+        return (
+          <div className="bg-slate-600 p-4">
+            <p>{payload[0].payload.date}</p>
+            <p>{payload[0].payload.name}</p>
+            <p>{`${payload[0].payload.type}: ${payload[0].value.toFixed(
+              2
+            )}`}</p>
+          </div>
+        );
+      }
+    }
+  };
+
+  let height;
+  let width;
+  if (incomes.length >= 20) {
+    height = 400;
+    width = 1000;
+  } else {
+    height = 300;
+    width = 500;
+  }
+
+  if (isLoading)
+    return (
+      <div className="flex flex-col items-center p-6">
+        <div className="inline-block w-8 h-8 animate-spin rounded-full border-4 border-solid border-current border-e-transparent align-[-0.125]" />
+      </div>
+    );
   return isAuthenticated ? (
     <div className="flex flex-col items-center justify-between">
-      {/* <h1>Add Income</h1>
-          <form onSubmit={createIncome} className="flex flex-col mt-2">
-            <p>Name:</p>
-            <input
-              type="text"
-              className="text-black"
-              value={newIncome.name}
-              onChange={(e) =>
-                setNewIncome({ ...newIncome, name: e.target.value })
-              }
-            />
-            <p className="mt-2">Amount:</p>
-            <input
-              type="number"
-              className="text-black"
-              value={newIncome.amount}
-              onChange={(e) =>
-                setNewIncome({ ...newIncome, amount: Number(e.target.value) })
-              }
-            />
-            <p className="mt-2">Date:</p>
-            <input
-              type="date"
-              className="text-black"
-              value={newIncome.date.toISOString().split('T')[0]}
-              onChange={(e) =>
-                setNewIncome({
-                  ...newIncome,
-                  date: new Date(e.target.value),
-                })
-              }
-            />
-            <p className="mt-2">Type:</p>
-            <select
-              className="text-black"
-              onChange={(e) =>
-                setNewIncome({
-                  ...newIncome,
-                  type: e.target.value as incomeType,
-                })
-              }
-            >
-              {Object.values(incomeType).map((selectedType, index) => (
-                <option key={index} value={selectedType}>
-                  {selectedType}
-                </option>
-              ))}
-            </select>
-            <button
-              type="submit"
-              className="p-2 bg-blue-500 hover:bg-blue-600 rounded text-white mt-6"
-            >
-              Add Income
-            </button>
-            <button onClick={() => setIsCreateModalOpen(true)}></button>
-          </form> */}
-      {isCreateModalOpen && (
-        <Modal onClose={() => setIsCreateModalOpen(false)}>
-          <CreateIncomeForm />
+      {isEditModalOpen && (
+        <Modal onClose={() => setIsEditModalOpen(false)}>
+          <EditIncomeForm id={incomeId} />
         </Modal>
       )}
-      <div className="mt-6">
-        <Frame title="Income">
-          <BarChart
-            width={400}
-            height={250}
-            data={formatedIncome}
-            margin={{ top: 5, right: 30, left: 20, bottom: 5 }}
-          >
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="date" />
-            <YAxis />
-            <Tooltip />
-            <Legend />
-            <Bar type="monotone" dataKey="amount" fill="#FF7F7F" />
-          </BarChart>
-        </Frame>
-      </div>
+      {isCreateModalOpen && (
+        <Modal onClose={() => setIsCreateModalOpen(false)}>
+          <CreateIncomeForm onCreateIncome={createIncome} />
+          {/* onCreateIncome={createIncome} */}
+        </Modal>
+      )}
 
-      <div className="mt-6 flex flex-col">
+      {confirmDelete && (
+        <DeleteModal
+          id={delId}
+          confirmDelete={deleteIncome}
+          onClose={() => setConfirmDelete(false)}
+        />
+      )}
+      {incomes.length ? (
+        <div className="mt-6 px-2 max-w-full">
+          <Frame title="Incomes">
+            <BarChart width={width} height={height} data={[]}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="date" />
+              <YAxis />
+              <Tooltip content={<CustomTooltip />} />
+              <Bar
+                dataKey="amount"
+                data={formatedIncomes}
+                onMouseOver={() => (tooltip = 'amount')}
+              >
+                {formatedIncomes.map((income, index) => (
+                  <Cell key={index} fill={incomeTypeColors[income.type]} />
+                ))}
+              </Bar>
+            </BarChart>
+          </Frame>
+        </div>
+      ) : (
+        ''
+      )}
+      {incomeTypeAndCount.length > 1 ? (
+        <div className="mt-6">
+          <Frame title="Types">
+            <PieChart width={500} height={400} className="-mt-6">
+              <Legend />
+              <Tooltip content={<CustomTooltip />} />
+              <Pie
+                data={incomeTypeAndCount}
+                dataKey="amount"
+                nameKey="type"
+                // cx="50%"
+                // cy="50%"
+                // outerRadius={100}
+                fill="#8884d8"
+                onMouseOver={() => (tooltip = 'amount')}
+              >
+                {incomeTypeAndCount.map((income, index) => (
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={incomeTypeColors[income.type]}
+                  />
+                ))}
+              </Pie>
+            </PieChart>
+          </Frame>
+        </div>
+      ) : (
+        ''
+      )}
+      <div className="mt-6 flex flex-col max-w-full">
         <button
-          className="p-2 bg-green-500 hover:bg-green-600 rounded text-white mt-6 w-[120px] place-self-end"
+          className="p-2 bg-green-500 hover:bg-green-600 rounded text-white w-[120px] place-self-end"
           onClick={() => setIsCreateModalOpen(true)}
         >
           Add income
         </button>
-        <table>
+        {/* <div className="flex justify-between place-self-end mt-2">
+          <div className="mt-2">
+            From:
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="mx-2 text-black rounded-sm"
+            />
+            To:
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="mx-2 text-black rounded-sm"
+            />
+            <button
+              onClick={filterIncome}
+              className="bg-orange-300 hover:bg-orange-400 rounded text-white p-2 w-[70px]"
+            >
+              Filter
+            </button>
+            <button
+              onClick={handleResetDateFilter}
+              className="bg-orange-300 hover:bg-orange-400 rounded text-white p-2 w-[100px]"
+            >
+              Reset filter
+            </button>
+          </div>
+        </div> */}
+
+        <table className="mt-2">
           <thead className="border-b border-gray-400">
             <tr className="mb-2">
-              <th className="px-4 py-2 ">Name</th>
+              <th className="px-4 py-2">Name</th>
               <th className="px-4 py-2">Amount</th>
               <th className="px-4 py-2">Type</th>
               <th className="px-4 py-2">Date</th>
             </tr>
           </thead>
           <tbody>
-            {formatedIncome.map((income) => (
-              <tr key={income.incomeId}>
+            {formatedIncomes.toReversed().map((income) => (
+              <tr key={income.incomeId} className="hover:bg-slate-800">
                 <td className="px-4 py-2">{income.name}</td>
                 <td className="px-4 py-2">{income.amount}</td>
                 <td className="px-4 py-2">{income.type}</td>
                 <td className="px-4 py-2">{income.date}</td>
                 <td className="px-4 py-2">
                   <button
-                    // onClick={() => handleEdit(income.incomeId)}
+                    onClick={() => handleEdit(income.incomeId)}
                     className="bg-orange-300 hover:bg-orange-400 rounded text-white p-2 w-[70px]"
                   >
                     Edit
@@ -281,7 +376,7 @@ export default function Income() {
                 </td>
                 <td>
                   <button
-                    onClick={() => deleteIncome(income.incomeId)}
+                    onClick={() => handleDelete(income.incomeId)}
                     className="bg-red-500 hover:bg-red-600 rounded text-white p-2 w-[70px]"
                   >
                     Delete
@@ -292,6 +387,7 @@ export default function Income() {
           </tbody>
         </table>
       </div>
+      <div></div>
     </div>
   ) : (
     <div className="flex flex-col items-center justify-between">
@@ -299,4 +395,5 @@ export default function Income() {
       <LoginLink className="mt-4">Login</LoginLink>
     </div>
   );
-}
+};
+export default Income;

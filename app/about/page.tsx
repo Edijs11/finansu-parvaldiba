@@ -1,16 +1,24 @@
 const About = () => {
   return (
     <div className="p-6">
-      <h1 className="mt-6 text-3xl">Finance management</h1>
+      <h1 className="mt-6 text-3xl">
+        Start Finance Management Now, Enjoy the Benefits Later
+      </h1>
       <div className="mt-4">
-        Finance management is the strategic planning and managing of an
-        individual or organization’s finances to better align their financial
-        status to their goals and objectives. Depending on the size of a
-        company, finance management seeks to optimize shareholder value,
-        generate profit, mitigate risk, and safeguard the company's financial
-        health in the short and long term. When working with individuals,
-        finance management may entail planning for retirement, college savings,
-        and other personal investments.
+        Starting to manage your finance is one of the most important things for
+        more fulfiling life. It's always better to start now instead of wait and
+        regret your decisions later. This platform is meant to start your
+        journey in finance management and to archieve your goals.
+      </div>
+      <div className="mt-6">
+        We recommend you to start by coming up with a budget that fits your
+        lifestyle and manage your finance in our platform. We allow users to
+        manage income, expenses, saving goals and debts by manually entering the
+        data.
+      </div>
+      <div className="mt-6">
+        Analyze your finance by checking the diagramms we provide from the data
+        you enter...
       </div>
     </div>
   );

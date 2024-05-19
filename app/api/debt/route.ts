@@ -1,17 +1,9 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+import { debtShema } from '@/app/lib/shemas';
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-
-export const debtShema = z.object({
-  name: z.string().min(3).max(20),
-  amount: z.number().min(0),
-  saved: z.number().min(0),
-  startDate: z.coerce.date(),
-  endDate: z.coerce.date(),
-  userId: z.number().optional(),
-});
 
 export async function GET() {
   const { getUser } = getKindeServerSession();
@@ -55,6 +47,7 @@ export async function POST(req: NextRequest) {
         name: input.name,
         amount: Number(input.amount),
         saved: Number(input.saved),
+        interest_rate: Number(input.interest_rate),
         startDate: input.startDate,
         endDate: input.endDate,
         userId: dbUser.id,

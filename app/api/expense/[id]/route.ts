@@ -9,10 +9,21 @@ export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const { getUser } = getKindeServerSession();
+  const user = await getUser();
+
+  if (!user || user == null || !user.id) {
+    throw new Error('Something went wrong with authentication' + user);
+  }
+
+  let dbUser = await prisma.user.findUnique({
+    where: { kindeId: user.id },
+  });
   const id = params.id;
   const expense = await prisma.expense.findUnique({
     where: {
       expenseId: Number(id),
+      userId: dbUser.id,
     },
   });
 
@@ -22,38 +33,37 @@ export async function GET(
   return NextResponse.json(expense);
 }
 
-export async function PUT(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(req: NextRequest) {
   try {
-    const { getUser } = getKindeServerSession();
-    const user = await getUser();
+    // const { getUser } = getKindeServerSession();
+    // const user = await getUser();
 
-    if (!user || user == null || !user.id) {
-      throw new Error('Something went wrong with authentication' + user);
-    }
+    // if (!user || user == null || !user.id) {
+    //   throw new Error('Something went wrong with authentication' + user);
+    // }
 
-    let dbUser = await prisma.user.findUnique({
-      where: { kindeId: user.id },
-    });
+    // let dbUser = await prisma.user.findUnique({
+    //   where: { kindeId: user.id },
+    // });
 
     const body = await req.json();
     const inputExpense = expenseShema.parse(body);
     const expense = await prisma.expense.update({
       where: {
-        id: { id: Number(params.id) },
+        expenseId: inputExpense.expenseId,
       },
       data: {
         name: inputExpense.name,
+        description: inputExpense.description,
         amount: Number(inputExpense.amount),
         date: inputExpense.date,
         type: inputExpense.type,
-        userId: dbUser.id,
+        userId: inputExpense.userId,
       },
     });
     return new NextResponse(JSON.stringify(expense), { status: 200 });
   } catch (error) {
+    console.log(error);
     return new NextResponse(
       JSON.stringify({ error: 'error editing expense' }),
       {

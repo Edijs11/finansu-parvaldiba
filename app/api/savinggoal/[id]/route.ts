@@ -5,52 +5,63 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
 import { savingGoalShema } from '@/app/lib/shemas';
 
-// export async function GET(
-//   req: NextRequest,
-//   { params }: { params: { id: string } }
-// ) {
-//   const id = params.id;
-//   const savingGoal = await prisma.savingGoal.findUnique({
-//     where: {
-//       savingGoalId: Number(id),
-//     },
-//   });
-
-//   if (!savingGoal) {
-//     return NextResponse.json({ error: 'savingGoal not found' }, { status: 404 });
-//   }
-//   return NextResponse.json(savingGoal);
-// }
-
-export async function PUT(
+export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
+  const { getUser } = getKindeServerSession();
+  const user = await getUser();
+
+  if (!user || user == null || !user.id) {
+    throw new Error('Something went wrong with authentication' + user);
+  }
+
+  let dbUser = await prisma.user.findUnique({
+    where: { kindeId: user.id },
+  });
+  const id = params.id;
+  const savingGoal = await prisma.savingGoal.findUnique({
+    where: {
+      savingId: Number(id),
+      userId: dbUser.id,
+    },
+  });
+
+  if (!savingGoal) {
+    return NextResponse.json(
+      { error: 'savingGoal not found' },
+      { status: 404 }
+    );
+  }
+  return NextResponse.json(savingGoal);
+}
+
+export async function PUT(req: NextRequest) {
   try {
-    const { getUser } = getKindeServerSession();
-    const user = await getUser();
+    // const { getUser } = getKindeServerSession();
+    // const user = await getUser();
 
-    if (!user || user == null || !user.id) {
-      throw new Error('Something went wrong with authentication' + user);
-    }
+    // if (!user || user == null || !user.id) {
+    //   throw new Error('Something went wrong with authentication' + user);
+    // }
 
-    let dbUser = await prisma.user.findUnique({
-      where: { kindeId: user.id },
-    });
+    // let dbUser = await prisma.user.findUnique({
+    //   where: { kindeId: user.id },
+    // });
 
     const body = await req.json();
     const inputSavingGoal = savingGoalShema.parse(body);
     const savingGoal = await prisma.savingGoal.update({
       where: {
-        id: { id: Number(params.id) },
+        savingId: inputSavingGoal.savingId,
       },
       data: {
         name: inputSavingGoal.name,
         amount: Number(inputSavingGoal.amount),
-        saved: Number(inputSavingGoal.amount),
+        saved: Number(inputSavingGoal.saved),
         startDate: inputSavingGoal.startDate,
         endDate: inputSavingGoal.endDate,
-        userId: dbUser.id,
+        userId: inputSavingGoal.userId,
       },
     });
     return new NextResponse(JSON.stringify(savingGoal), { status: 200 });
@@ -97,13 +108,19 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const id = params.id;
+    const id = Number(params.id);
 
-    const deleteSavingGoal = await prisma.savingGoal.delete({
+    await prisma.transaction.deleteMany({
       where: {
-        savingId: Number(id),
+        savingGoalId: id,
       },
     });
+    const deleteSavingGoal = await prisma.savingGoal.delete({
+      where: {
+        savingId: id,
+      },
+    });
+
     return NextResponse.json(deleteSavingGoal, { status: 200 });
   } catch (error) {
     return NextResponse.json(

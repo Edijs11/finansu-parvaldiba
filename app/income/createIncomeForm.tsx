@@ -1,17 +1,25 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { incomeType } from '@prisma/client';
+import { Income, incomeType } from '@prisma/client';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { incomeShema } from '../lib/shemas';
-import { useState } from 'react';
-import axios from 'axios';
 
-type TCreateIncomeShema = z.infer<typeof incomeShema>;
+export type TCreateIncomeShema = z.infer<typeof incomeShema>;
 
-export default function CreateIncomeForm() {
-  const apiUrl = 'http://localhost:3000';
+// interface IncomeProps {
+//   onCreateIncome: (income: Income) => Promise<Income>;
+// }
+// interface incomeProps {
+//   name: string;
+//   amount: number;
+//   date: Date;
+//   type: incomeType;
+// }
+
+const CreateIncomeForm = ({ onCreateIncome }: any) => {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const {
     register,
     handleSubmit,
@@ -24,7 +32,8 @@ export default function CreateIncomeForm() {
   const onSubmit: SubmitHandler<TCreateIncomeShema> = async (data) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      await axios.post(`${apiUrl}/api/income`, data);
+      // await axios.post(`${apiUrl}/api/income`, data);
+      await onCreateIncome(data);
       reset();
     } catch {
       new Error('this is bad');
@@ -33,14 +42,13 @@ export default function CreateIncomeForm() {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col mt-2">
-      <h1 className="text-xl place-self-center">Add Income</h1>
+      <h1 className="text-xl place-self-center -mt-8">Add Income</h1>
       <p className="mt-4">Name:</p>
       <input
         {...register('name')}
         type="text"
         placeholder="Name"
         className="text-black rounded-sm"
-        required
       />
       {errors.name && (
         <p className="text-red-500">{`${errors.name.message}`}</p>
@@ -50,6 +58,7 @@ export default function CreateIncomeForm() {
       <input
         {...register('amount', { valueAsNumber: true })}
         type="number"
+        step="0.01"
         placeholder="Amount"
         className="text-black rounded-sm"
       />
@@ -65,7 +74,7 @@ export default function CreateIncomeForm() {
         required
       />
       <p className="mt-2">Type:</p>
-      <select {...register('type')} className="text-black rounded-sm" required>
+      <select {...register('type')} className="text-black rounded-sm">
         {Object.values(incomeType).map((selectedType, index) => (
           <option key={index} value={selectedType}>
             {selectedType}
@@ -78,7 +87,9 @@ export default function CreateIncomeForm() {
       >
         Add Income
       </button>
+
       {/* <button onClick={() => setIsCreateModalOpen(true)}></button> */}
     </form>
   );
-}
+};
+export default CreateIncomeForm;

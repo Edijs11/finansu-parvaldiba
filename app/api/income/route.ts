@@ -38,10 +38,8 @@ export async function POST(req: NextRequest) {
     let dbUser = await prisma.user.findUnique({
       where: { kindeId: user.id },
     });
-
     const body = await req.json();
     const input = incomeShema.parse(body);
-    // const { name, amount, date, type } = await req.json();
     const income = await prisma.income.create({
       data: {
         name: input.name,

@@ -1,38 +1,38 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { incomeType } from '@prisma/client';
+import { expenseType, incomeType } from '@prisma/client';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { incomeShema } from '../lib/shemas';
+import { expenseShema } from '../lib/shemas';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
-type TCreateIncomeShema = z.infer<typeof incomeShema>;
-const EditIncomeForm = ({ id }: { id: number }) => {
+type TCreateExpenseShema = z.infer<typeof expenseShema>;
+const EditExpenseForm = ({ id }: { id: number }) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<TCreateIncomeShema>({
-    resolver: zodResolver(incomeShema),
+  } = useForm<TCreateExpenseShema>({
+    resolver: zodResolver(expenseShema),
   });
 
-  const getCurrentIncome = async () => {
+  const getCurrentExpense = async () => {
     try {
-      const current = await axios.get(`${apiUrl}/api/income/${id}`);
+      const current = await axios.get(`${apiUrl}/api/expense/${id}`);
       return current.data;
     } catch {
-      new Error('could not get the current user');
+      new Error('could not get the current expense');
       return null;
     }
   };
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await getCurrentIncome();
+        const data = await getCurrentExpense();
         reset(data);
       } catch {
         new Error('cant get data');
@@ -41,10 +41,10 @@ const EditIncomeForm = ({ id }: { id: number }) => {
     fetchData();
   }, [reset]);
 
-  const onSubmit: SubmitHandler<TCreateIncomeShema> = async (data) => {
+  const onSubmit: SubmitHandler<TCreateExpenseShema> = async (data) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      const resp = await axios.put(`${apiUrl}/api/income/${id}`, data);
+      const resp = await axios.put(`${apiUrl}/api/expense/${id}`, data);
       reset();
     } catch {
       new Error('could not submit');
@@ -62,6 +62,17 @@ const EditIncomeForm = ({ id }: { id: number }) => {
       />
       {errors.name && (
         <p className="text-red-500">{`${errors.name.message}`}</p>
+      )}
+
+      <p>Description:</p>
+      <input
+        {...register('description')}
+        type="text"
+        placeholder="Description"
+        className="text-black rounded-sm"
+      />
+      {errors.description && (
+        <p className="text-red-500">{`${errors.description.message}`}</p>
       )}
 
       <p className="mt-2">Amount:</p>
@@ -84,8 +95,8 @@ const EditIncomeForm = ({ id }: { id: number }) => {
         required
       />
       <p className="mt-2">Type:</p>
-      <select {...register('type')} className="text-black rounded-sm" required>
-        {Object.values(incomeType).map((selectedType, index) => (
+      <select {...register('type')} className="text-black rounded-sm">
+        {Object.values(expenseType).map((selectedType, index) => (
           <option key={index} value={selectedType}>
             {selectedType}
           </option>
@@ -95,10 +106,10 @@ const EditIncomeForm = ({ id }: { id: number }) => {
         type="submit"
         className="p-2 bg-blue-500 hover:bg-blue-600 rounded text-white mt-6"
       >
-        Edit Income
+        Add Expense
       </button>
       {/* <button onClick={() => setIsCreateModalOpen(true)}></button> */}
     </form>
   );
 };
-export default EditIncomeForm;
+export default EditExpenseForm;

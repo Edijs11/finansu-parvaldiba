@@ -3,27 +3,27 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { savingGoalShema } from '../lib/shemas';
+import { debtShema } from '../lib/shemas';
 import axios from 'axios';
 
-type TCreateSavingGoalShema = z.infer<typeof savingGoalShema>;
+type TCreateDebtShema = z.infer<typeof debtShema>;
 
-const CreateSavingGoalForm = ({ onCreateSavingGoal }: any) => {
+const CreateDebtForm = ({ onCreateDebt }: any) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<TCreateSavingGoalShema>({
-    resolver: zodResolver(savingGoalShema),
+  } = useForm<TCreateDebtShema>({
+    resolver: zodResolver(debtShema),
   });
 
-  const onSubmit: SubmitHandler<TCreateSavingGoalShema> = async (data) => {
+  const onSubmit: SubmitHandler<TCreateDebtShema> = async (data) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      // await axios.post(`${apiUrl}/api/savinggoal`, data);
-      onCreateSavingGoal(data);
+      // await axios.post(`${apiUrl}/api/debt`, data);
+      onCreateDebt(data);
       reset();
     } catch {
       new Error('this is bad');
@@ -32,7 +32,7 @@ const CreateSavingGoalForm = ({ onCreateSavingGoal }: any) => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col mt-2">
-      <h1 className="text-xl place-self-center">Add Saving Goal</h1>
+      <h1 className="text-xl place-self-center">Add Debt</h1>
       <p className="mt-4">Name:</p>
       <input
         {...register('name')}
@@ -44,6 +44,18 @@ const CreateSavingGoalForm = ({ onCreateSavingGoal }: any) => {
       {errors.name && (
         <p className="text-red-500">{`${errors.name.message}`}</p>
       )}
+
+      {/* <p className="mt-2">Amount:</p>
+      <input
+        {...register('amount', { valueAsNumber: true })}
+        type="number"
+        step="0.01"
+        placeholder="Amount"
+        className="text-black rounded-sm"
+      />
+      {errors.amount && (
+        <p className="text-red-500">{`${errors.amount.message}`}</p>
+      )} */}
 
       <p className="mt-2">Saved:</p>
       <input
@@ -57,6 +69,18 @@ const CreateSavingGoalForm = ({ onCreateSavingGoal }: any) => {
         <p className="text-red-500">{`${errors.saved.message}`}</p>
       )}
 
+      <p className="mt-2">Interest rate:</p>
+      <input
+        {...register('interest_rate', { valueAsNumber: true })}
+        type="number"
+        step="0.01"
+        placeholder="interest rate"
+        className="text-black rounded-sm"
+      />
+      {errors.interest_rate && (
+        <p className="text-red-500">{`${errors.interest_rate.message}`}</p>
+      )}
+
       <p className="mt-2">Start Date:</p>
       <input
         {...register('startDate')}
@@ -64,9 +88,6 @@ const CreateSavingGoalForm = ({ onCreateSavingGoal }: any) => {
         className="text-black rounded-sm"
         required
       />
-      {errors.startDate && (
-        <p className="text-red-500">{`${errors.startDate.message}`}</p>
-      )}
       <p className="mt-2">End Date:</p>
       <input
         {...register('endDate')}
@@ -74,17 +95,16 @@ const CreateSavingGoalForm = ({ onCreateSavingGoal }: any) => {
         className="text-black rounded-sm"
         required
       />
-      {errors.endDate && (
-        <p className="text-red-500">{`${errors.endDate.message}`}</p>
-      )}
 
       <button
         type="submit"
         className="p-2 bg-blue-500 hover:bg-blue-600 rounded text-white mt-6"
       >
-        Add Saving Goal
+        Add Debt
       </button>
+      {/* <button onClick={() => setIsCreateModalOpen(true)}></button> */}
     </form>
   );
 };
-export default CreateSavingGoalForm;
+
+export default CreateDebtForm;

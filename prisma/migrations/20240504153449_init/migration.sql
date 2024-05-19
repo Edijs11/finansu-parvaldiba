@@ -1,8 +1,11 @@
 -- CreateEnum
-CREATE TYPE "incomeType" AS ENUM ('SALARY', 'DIVIDENDS', 'GOVERMENT_ASSISTANCE', 'REALASTATE', 'BUSSINES_INCOME');
+CREATE TYPE "incomeType" AS ENUM ('SALARY', 'DIVIDENDS', 'GOVERMENT_ASSISTANCE', 'GIFT', 'REALASTATE', 'PROFIT_INCOME', 'INTEREST_INCOME', 'ROYALTY_INCOME', 'OTHER');
 
 -- CreateEnum
-CREATE TYPE "expenseType" AS ENUM ('FOOD_GROCERIES', 'TRANSPORT', 'HEALTHCARE', 'INSURANCE', 'HOUSING', 'ENTERTAINMENT', 'OTHER');
+CREATE TYPE "expenseType" AS ENUM ('FOOD_GROCERIES', 'UTILITIES', 'TRANSPORT', 'HEALTHCARE', 'INSURANCE', 'HOUSING', 'ENTERTAINMENT', 'REPAIR', 'OTHER');
+
+-- CreateEnum
+CREATE TYPE "TransactionType" AS ENUM ('GOAL', 'DEBT');
 
 -- CreateTable
 CREATE TABLE "User" (
@@ -20,7 +23,7 @@ CREATE TABLE "Income" (
     "incomeId" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "amount" DOUBLE PRECISION NOT NULL,
-    "date" TIMESTAMP(3),
+    "date" TIMESTAMP(3) NOT NULL,
     "type" "incomeType" NOT NULL,
     "userId" INTEGER NOT NULL,
 
@@ -29,15 +32,15 @@ CREATE TABLE "Income" (
 
 -- CreateTable
 CREATE TABLE "Expense" (
-    "expenceId" SERIAL NOT NULL,
+    "expenseId" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
     "amount" DOUBLE PRECISION NOT NULL,
-    "date" TIMESTAMP(3),
+    "date" TIMESTAMP(3) NOT NULL,
     "type" "expenseType" NOT NULL,
     "userId" INTEGER NOT NULL,
 
-    CONSTRAINT "Expense_pkey" PRIMARY KEY ("expenceId")
+    CONSTRAINT "Expense_pkey" PRIMARY KEY ("expenseId")
 );
 
 -- CreateTable
@@ -47,7 +50,7 @@ CREATE TABLE "SavingGoal" (
     "amount" DOUBLE PRECISION NOT NULL,
     "saved" DOUBLE PRECISION NOT NULL,
     "startDate" TIMESTAMP(3) NOT NULL,
-    "endDate" TIMESTAMP(3),
+    "endDate" TIMESTAMP(3) NOT NULL,
     "userId" INTEGER NOT NULL,
 
     CONSTRAINT "SavingGoal_pkey" PRIMARY KEY ("savingId")
@@ -55,15 +58,28 @@ CREATE TABLE "SavingGoal" (
 
 -- CreateTable
 CREATE TABLE "Debt" (
-    "savingId" SERIAL NOT NULL,
+    "debtId" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "amount" DOUBLE PRECISION NOT NULL,
     "saved" DOUBLE PRECISION NOT NULL,
     "startDate" TIMESTAMP(3) NOT NULL,
-    "endDate" TIMESTAMP(3),
+    "endDate" TIMESTAMP(3) NOT NULL,
+    "interest_rate" INTEGER NOT NULL,
     "userId" INTEGER NOT NULL,
 
-    CONSTRAINT "Debt_pkey" PRIMARY KEY ("savingId")
+    CONSTRAINT "Debt_pkey" PRIMARY KEY ("debtId")
+);
+
+-- CreateTable
+CREATE TABLE "Transaction" (
+    "transactionId" SERIAL NOT NULL,
+    "amount" DOUBLE PRECISION NOT NULL,
+    "date" TIMESTAMP(3) NOT NULL,
+    "type" "TransactionType" NOT NULL,
+    "savingGoalId" INTEGER NOT NULL,
+    "debtId" INTEGER NOT NULL,
+
+    CONSTRAINT "Transaction_pkey" PRIMARY KEY ("transactionId")
 );
 
 -- CreateIndex
@@ -86,3 +102,9 @@ ALTER TABLE "SavingGoal" ADD CONSTRAINT "SavingGoal_userId_fkey" FOREIGN KEY ("u
 
 -- AddForeignKey
 ALTER TABLE "Debt" ADD CONSTRAINT "Debt_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_savingGoalId_fkey" FOREIGN KEY ("savingGoalId") REFERENCES "SavingGoal"("savingId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Transaction" ADD CONSTRAINT "Transaction_debtId_fkey" FOREIGN KEY ("debtId") REFERENCES "Debt"("debtId") ON DELETE RESTRICT ON UPDATE CASCADE;

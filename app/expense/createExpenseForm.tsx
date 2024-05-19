@@ -5,13 +5,12 @@ import { expenseType } from '@prisma/client';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { expenseShema } from '../lib/shemas';
-import { useState } from 'react';
 import axios from 'axios';
 
 type TCreateExpenseShema = z.infer<typeof expenseShema>;
 
-export default function CreateExpenseForm() {
-  const apiUrl = 'http://localhost:3000';
+const CreateExpenseForm = ({ onCreateExpense }: any) => {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const {
     register,
     handleSubmit,
@@ -24,7 +23,8 @@ export default function CreateExpenseForm() {
   const onSubmit: SubmitHandler<TCreateExpenseShema> = async (data) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      await axios.post(`${apiUrl}/api/expense`, data);
+      // await axios.post(`${apiUrl}/api/expense`, data);
+      onCreateExpense(data);
       reset();
     } catch {
       new Error('this is bad');
@@ -40,27 +40,28 @@ export default function CreateExpenseForm() {
         type="text"
         placeholder="Name"
         className="text-black rounded-sm"
-        required
+        required //ja pareizi saprotu tad uz .nonempty zod shema
       />
       {errors.name && (
         <p className="text-red-500">{`${errors.name.message}`}</p>
       )}
       <p className="mt-4">Description:</p>
-      <input
+      <textarea
         {...register('description')}
-        type="text"
         placeholder="Description"
         className="text-black rounded-sm"
-        required
+        rows={2}
+        wrap="hard"
       />
-      {/* {errors.name && (
+      {errors.description && (
         <p className="text-red-500">{`${errors.description.message}`}</p>
-      )} */}
+      )}
 
       <p className="mt-2">Amount:</p>
       <input
         {...register('amount', { valueAsNumber: true })}
         type="number"
+        step="0.01"
         placeholder="Amount"
         className="text-black rounded-sm"
       />
@@ -92,4 +93,5 @@ export default function CreateExpenseForm() {
       {/* <button onClick={() => setIsCreateModalOpen(true)}></button> */}
     </form>
   );
-}
+};
+export default CreateExpenseForm;

@@ -4,25 +4,25 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { incomeType } from '@prisma/client';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { incomeShema } from '../lib/shemas';
+import { savingGoalShema } from '../lib/shemas';
 import { useEffect, useState } from 'react';
 import axios from 'axios';
 
-type TCreateIncomeShema = z.infer<typeof incomeShema>;
-const EditIncomeForm = ({ id }: { id: number }) => {
+type TCreateSavingGoalShema = z.infer<typeof savingGoalShema>;
+const EditSavingGoalForm = ({ id }: { id: number }) => {
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
-  } = useForm<TCreateIncomeShema>({
-    resolver: zodResolver(incomeShema),
+  } = useForm<TCreateSavingGoalShema>({
+    resolver: zodResolver(savingGoalShema),
   });
 
-  const getCurrentIncome = async () => {
+  const getCurrentSavingGoal = async () => {
     try {
-      const current = await axios.get(`${apiUrl}/api/income/${id}`);
+      const current = await axios.get(`${apiUrl}/api/savinggoal/${id}`);
       return current.data;
     } catch {
       new Error('could not get the current user');
@@ -32,7 +32,7 @@ const EditIncomeForm = ({ id }: { id: number }) => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await getCurrentIncome();
+        const data = await getCurrentSavingGoal();
         reset(data);
       } catch {
         new Error('cant get data');
@@ -41,10 +41,10 @@ const EditIncomeForm = ({ id }: { id: number }) => {
     fetchData();
   }, [reset]);
 
-  const onSubmit: SubmitHandler<TCreateIncomeShema> = async (data) => {
+  const onSubmit: SubmitHandler<TCreateSavingGoalShema> = async (data) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      const resp = await axios.put(`${apiUrl}/api/income/${id}`, data);
+      const resp = await axios.put(`${apiUrl}/api/savinggoal/${id}`, data);
       reset();
     } catch {
       new Error('could not submit');
@@ -64,41 +64,42 @@ const EditIncomeForm = ({ id }: { id: number }) => {
         <p className="text-red-500">{`${errors.name.message}`}</p>
       )}
 
-      <p className="mt-2">Amount:</p>
+      <p className="mt-2">Saved:</p>
       <input
-        {...register('amount', { valueAsNumber: true })}
+        {...register('saved', { valueAsNumber: true })}
         type="number"
-        placeholder="Amount"
+        placeholder="Saved"
         step="0.01"
         className="text-black rounded-sm"
       />
-      {errors.amount && (
-        <p className="text-red-500">{`${errors.amount.message}`}</p>
+      {errors.saved && (
+        <p className="text-red-500">{`${errors.saved.message}`}</p>
       )}
 
-      <p className="mt-2">Date:</p>
+      <p className="mt-2">Start Date:</p>
       <input
-        {...register('date')}
+        {...register('startDate')}
         type="date"
         className="text-black rounded-sm"
         required
       />
-      <p className="mt-2">Type:</p>
-      <select {...register('type')} className="text-black rounded-sm" required>
-        {Object.values(incomeType).map((selectedType, index) => (
-          <option key={index} value={selectedType}>
-            {selectedType}
-          </option>
-        ))}
-      </select>
+
+      <p className="mt-2">End Date:</p>
+      <input
+        {...register('endDate')}
+        type="date"
+        className="text-black rounded-sm"
+        required
+      />
+
       <button
         type="submit"
         className="p-2 bg-blue-500 hover:bg-blue-600 rounded text-white mt-6"
       >
-        Edit Income
+        Edit Saving Goal
       </button>
       {/* <button onClick={() => setIsCreateModalOpen(true)}></button> */}
     </form>
   );
 };
-export default EditIncomeForm;
+export default EditSavingGoalForm;
