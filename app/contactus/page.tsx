@@ -40,14 +40,14 @@ const ContactUs = () => {
     );
   return isAuthenticated ? (
     <div className="mx-auto max-w-md mt-10">
-      <h1 className="text-2xl">You can contact us here!</h1>
+      <h1 className="text-2xl">Sazinies ar mums!</h1>
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col mt-6">
-        <label htmlFor="subject">Message title</label>
+        <label htmlFor="subject">Ziņas iemesls</label>
         <input
           id="subject"
           {...register('subject')}
           type="text"
-          placeholder="Subject"
+          placeholder="Tēma"
           className="text-black rounded-sm"
         />
         {errors.subject && (
@@ -58,12 +58,12 @@ const ContactUs = () => {
           <option>some</option>
         </select> */}
         <label htmlFor="message" className="mt-4">
-          Description
+          Apraksts
         </label>
         <textarea
           id="message"
           {...register('message')}
-          placeholder="Message"
+          placeholder="Apraksts"
           rows={4}
           className="text-black rounded-sm"
         />
@@ -74,7 +74,7 @@ const ContactUs = () => {
           type="submit"
           className="p-2 bg-green-500 hover:bg-green-600 rounded text-white w-[120px] mt-4 place-self-end"
         >
-          Submit
+          Nosūtīt
         </button>
       </form>
     </div>

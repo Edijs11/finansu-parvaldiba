@@ -53,11 +53,12 @@ const EditIncomeForm = ({ id }: { id: number }) => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col mt-2">
-      <p>Name:</p>
+      <h1 className="text-xl place-self-center -mt-8">Rediģēt ienākumu</h1>
+      <p>Nosaukums:</p>
       <input
         {...register('name')}
         type="text"
-        placeholder="Name"
+        placeholder="Nosaukums"
         className="text-black rounded-sm"
       />
       {errors.name && (
@@ -68,7 +69,7 @@ const EditIncomeForm = ({ id }: { id: number }) => {
       <input
         {...register('amount', { valueAsNumber: true })}
         type="number"
-        placeholder="Amount"
+        placeholder="Apjoms"
         step="0.01"
         className="text-black rounded-sm"
       />
@@ -83,7 +84,7 @@ const EditIncomeForm = ({ id }: { id: number }) => {
         className="text-black rounded-sm"
         required
       />
-      <p className="mt-2">Type:</p>
+      <p className="mt-2">Tips:</p>
       <select {...register('type')} className="text-black rounded-sm" required>
         {Object.values(incomeType).map((selectedType, index) => (
           <option key={index} value={selectedType}>

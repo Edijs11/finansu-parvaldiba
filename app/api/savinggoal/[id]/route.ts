@@ -38,16 +38,16 @@ export async function GET(
 
 export async function PUT(req: NextRequest) {
   try {
-    // const { getUser } = getKindeServerSession();
-    // const user = await getUser();
+    const { getUser } = getKindeServerSession();
+    const user = await getUser();
 
-    // if (!user || user == null || !user.id) {
-    //   throw new Error('Something went wrong with authentication' + user);
-    // }
+    if (!user || user == null || !user.id) {
+      throw new Error('Something went wrong with authentication' + user);
+    }
 
-    // let dbUser = await prisma.user.findUnique({
-    //   where: { kindeId: user.id },
-    // });
+    let dbUser = await prisma.user.findUnique({
+      where: { kindeId: user.id },
+    });
 
     const body = await req.json();
     const inputSavingGoal = savingGoalShema.parse(body);
@@ -61,13 +61,13 @@ export async function PUT(req: NextRequest) {
         saved: Number(inputSavingGoal.saved),
         startDate: inputSavingGoal.startDate,
         endDate: inputSavingGoal.endDate,
-        userId: inputSavingGoal.userId,
+        userId: dbUser.id,
       },
     });
     return new NextResponse(JSON.stringify(savingGoal), { status: 200 });
   } catch (error) {
     return new NextResponse(
-      JSON.stringify({ error: 'error editing savingGoal' }),
+      JSON.stringify({ error: 'error editing saving goal' }),
       {
         status: 500,
       }
@@ -97,9 +97,12 @@ export async function PATCH(
     });
     return new NextResponse(JSON.stringify(income), { status: 200 });
   } catch (error) {
-    return new NextResponse(JSON.stringify({ error: 'error editing income' }), {
-      status: 500,
-    });
+    return new NextResponse(
+      JSON.stringify({ error: 'error editing saving goal' }),
+      {
+        status: 500,
+      }
+    );
   }
 }
 
@@ -124,7 +127,7 @@ export async function DELETE(
     return NextResponse.json(deleteSavingGoal, { status: 200 });
   } catch (error) {
     return NextResponse.json(
-      { error: 'Error deleting savingGoal' },
+      { error: 'Error deleting saving goal' },
       { status: 500 }
     );
   }

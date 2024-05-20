@@ -52,9 +52,8 @@ export async function POST(req: NextRequest) {
     return new NextResponse(JSON.stringify(income), { status: 201 });
   } catch (error) {
     console.log('create error:', error);
-    return new NextResponse(
-      JSON.stringify({ error: 'some error posting income' }),
-      { status: 500 }
-    );
+    return new NextResponse(JSON.stringify({ error: 'error posting income' }), {
+      status: 500,
+    });
   }
 }

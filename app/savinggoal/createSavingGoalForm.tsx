@@ -4,12 +4,10 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { savingGoalShema } from '../lib/shemas';
-import axios from 'axios';
 
 type TCreateSavingGoalShema = z.infer<typeof savingGoalShema>;
 
 const CreateSavingGoalForm = ({ onCreateSavingGoal }: any) => {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const {
     register,
     handleSubmit,
@@ -22,7 +20,6 @@ const CreateSavingGoalForm = ({ onCreateSavingGoal }: any) => {
   const onSubmit: SubmitHandler<TCreateSavingGoalShema> = async (data) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      // await axios.post(`${apiUrl}/api/savinggoal`, data);
       onCreateSavingGoal(data);
       reset();
     } catch {
@@ -32,12 +29,12 @@ const CreateSavingGoalForm = ({ onCreateSavingGoal }: any) => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col mt-2">
-      <h1 className="text-xl place-self-center">Add Saving Goal</h1>
-      <p className="mt-4">Name:</p>
+      <h1 className="text-xl place-self-center">Pievienot Taupīšanas Mērķi</h1>
+      <p className="mt-4">Nosaukums:</p>
       <input
         {...register('name')}
         type="text"
-        placeholder="Name"
+        placeholder="Nosaukums"
         className="text-black rounded-sm"
         required
       />
@@ -45,34 +42,32 @@ const CreateSavingGoalForm = ({ onCreateSavingGoal }: any) => {
         <p className="text-red-500">{`${errors.name.message}`}</p>
       )}
 
-      <p className="mt-2">Saved:</p>
+      <p className="mt-2">Mērķa apjoms:</p>
       <input
         {...register('saved', { valueAsNumber: true })}
         type="number"
         step="0.01"
-        placeholder="Saved"
+        placeholder="0.00"
         className="text-black rounded-sm"
       />
       {errors.saved && (
         <p className="text-red-500">{`${errors.saved.message}`}</p>
       )}
 
-      <p className="mt-2">Start Date:</p>
+      <p className="mt-2">Sākuma datums:</p>
       <input
         {...register('startDate')}
         type="date"
         className="text-black rounded-sm"
-        required
       />
       {errors.startDate && (
         <p className="text-red-500">{`${errors.startDate.message}`}</p>
       )}
-      <p className="mt-2">End Date:</p>
+      <p className="mt-2">Beigu datums:</p>
       <input
         {...register('endDate')}
         type="date"
         className="text-black rounded-sm"
-        required
       />
       {errors.endDate && (
         <p className="text-red-500">{`${errors.endDate.message}`}</p>
@@ -82,7 +77,7 @@ const CreateSavingGoalForm = ({ onCreateSavingGoal }: any) => {
         type="submit"
         className="p-2 bg-blue-500 hover:bg-blue-600 rounded text-white mt-6"
       >
-        Add Saving Goal
+        Pievienot taupīšanas mērķi
       </button>
     </form>
   );

@@ -159,7 +159,7 @@ const SavingGoal = () => {
             <EditSavingGoalForm id={savingGoalId} />
           </Modal>
         )}
-        <Frame title="Saving Goal Progess">
+        <Frame title="Taupīšanas mērķu progress">
           {goalPrecentage.map((goal, index) => (
             <div className="w-full" key={index}>
               <div className="mt-2">{goal.name}</div>
@@ -180,23 +180,22 @@ const SavingGoal = () => {
             className="p-2 bg-green-500 hover:bg-green-600 rounded text-white mt-6 w-[100px] place-self-end"
             onClick={() => setIsModalOpen(true)}
           >
-            Add Goal
+            Pievienot
           </button>
           <table>
             <thead>
               <tr>
-                <th className="px-4 py-2">Name</th>
-                <th className="px-4 py-2">Amount saved</th>
-                <th className="px-4 py-2">Goal amount</th>
-                <th className="px-4 py-2">Start Date</th>
-                <th className="px-4 py-2">End Date</th>
+                <th className="px-4 py-2 ">Nosaukums</th>
+                <th className="px-4 py-2">Ietaupītais apjoms</th>
+                <th className="px-4 py-2">Kopējais apjoms</th>
+                <th className="px-4 py-2">Sākuma datums</th>
+                <th className="px-4 py-2">Beigu datums</th>
+                <th className="px-4 py-2">Darbības</th>
               </tr>
             </thead>
             <tbody>
               {formatedSavingGoals.map((savingGoal) => (
                 <tr key={savingGoal.savingId} className="hover:bg-slate-800">
-                  {/* <Link href={`/savinggoal/${savingGoal.savingId}/transaction`}> */}
-                  {/* <a href={`/savinggoal/${savingGoal.savingId}/transaction`}> */}
                   <td className="px-4 py-2">{savingGoal.name}</td>
 
                   <td className="px-4 py-2">{savingGoal.amount.toFixed(2)}</td>
@@ -205,14 +204,13 @@ const SavingGoal = () => {
                     {savingGoal.startDate.toString()}
                   </td>
                   <td className="px-4 py-2">{savingGoal.endDate.toString()}</td>
-                  {/* </Link> */}
 
                   <td className="px-4 py-2">
                     <button
                       onClick={() => handleEdit(savingGoal.savingId)}
                       className="bg-orange-300 hover:bg-orange-400 rounded text-white p-2 w-[70px]"
                     >
-                      Edit
+                      Rediģēt
                     </button>
                   </td>
                   <td>
@@ -220,7 +218,7 @@ const SavingGoal = () => {
                       onClick={() => deleteSavingGoal(savingGoal.savingId)}
                       className="bg-red-500 hover:bg-red-600 rounded text-white p-2 w-[70px]"
                     >
-                      Delete
+                      Dzēst
                     </button>
                     <Link
                       className="px-4"

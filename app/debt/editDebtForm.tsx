@@ -53,34 +53,23 @@ const EditDebtForm = ({ id }: { id: number }) => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col mt-2">
-      <p>Name:</p>
+      <h1 className="text-xl place-self-center">Rediģēt Parādu</h1>
+      <p>Nosaukums:</p>
       <input
         {...register('name')}
         type="text"
-        placeholder="Name"
+        placeholder="Nosaukums"
         className="text-black rounded-sm"
       />
       {errors.name && (
         <p className="text-red-500">{`${errors.name.message}`}</p>
       )}
 
-      <p className="mt-2">Amount:</p>
-      <input
-        {...register('amount', { valueAsNumber: true })}
-        type="number"
-        placeholder="Amount"
-        step="0.01"
-        className="text-black rounded-sm"
-      />
-      {errors.amount && (
-        <p className="text-red-500">{`${errors.amount.message}`}</p>
-      )}
-
-      <p className="mt-2">Saved:</p>
+      <p className="mt-2">Ietaupītais apjoms:</p>
       <input
         {...register('saved', { valueAsNumber: true })}
         type="number"
-        placeholder="Saved"
+        placeholder="Ietaupītais apjoms"
         step="0.01"
         className="text-black rounded-sm"
       />
@@ -88,7 +77,18 @@ const EditDebtForm = ({ id }: { id: number }) => {
         <p className="text-red-500">{`${errors.saved.message}`}</p>
       )}
 
-      <p className="mt-2">Start Date:</p>
+      <p className="mt-2">Procentu likme:</p>
+      <input
+        {...register('interest_rate', { valueAsNumber: true })}
+        type="number"
+        placeholder="Procentu likme"
+        className="text-black rounded-sm"
+      />
+      {errors.interest_rate && (
+        <p className="text-red-500">{`${errors.interest_rate.message}`}</p>
+      )}
+
+      <p className="mt-2">Sākuma datums:</p>
       <input
         {...register('startDate')}
         type="date"
@@ -96,7 +96,7 @@ const EditDebtForm = ({ id }: { id: number }) => {
         required
       />
 
-      <p className="mt-2">End Date:</p>
+      <p className="mt-2">Beigu datums:</p>
       <input
         {...register('endDate')}
         type="date"
@@ -108,9 +108,8 @@ const EditDebtForm = ({ id }: { id: number }) => {
         type="submit"
         className="p-2 bg-blue-500 hover:bg-blue-600 rounded text-white mt-6"
       >
-        Edit Saving Goal
+        Rediģēt parādu
       </button>
-      {/* <button onClick={() => setIsCreateModalOpen(true)}></button> */}
     </form>
   );
 };

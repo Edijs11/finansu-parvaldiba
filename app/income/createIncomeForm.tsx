@@ -32,7 +32,6 @@ const CreateIncomeForm = ({ onCreateIncome }: any) => {
   const onSubmit: SubmitHandler<TCreateIncomeShema> = async (data) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      // await axios.post(`${apiUrl}/api/income`, data);
       await onCreateIncome(data);
       reset();
     } catch {
@@ -42,38 +41,38 @@ const CreateIncomeForm = ({ onCreateIncome }: any) => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col mt-2">
-      <h1 className="text-xl place-self-center -mt-8">Add Income</h1>
-      <p className="mt-4">Name:</p>
+      <h1 className="text-xl place-self-center -mt-8">Pievienot ienākumu</h1>
+      <p className="mt-4">Nosaukums:</p>
       <input
         {...register('name')}
         type="text"
-        placeholder="Name"
+        placeholder="Nosaukums"
         className="text-black rounded-sm"
       />
       {errors.name && (
         <p className="text-red-500">{`${errors.name.message}`}</p>
       )}
 
-      <p className="mt-2">Amount:</p>
+      <p className="mt-2">Apjoms:</p>
       <input
         {...register('amount', { valueAsNumber: true })}
         type="number"
         step="0.01"
-        placeholder="Amount"
+        placeholder="Apjoms"
         className="text-black rounded-sm"
       />
       {errors.amount && (
         <p className="text-red-500">{`${errors.amount.message}`}</p>
       )}
 
-      <p className="mt-2">Date:</p>
+      <p className="mt-2">Datums:</p>
       <input
         {...register('date')}
         type="date"
         className="text-black rounded-sm"
         required
       />
-      <p className="mt-2">Type:</p>
+      <p className="mt-2">Tips:</p>
       <select {...register('type')} className="text-black rounded-sm">
         {Object.values(incomeType).map((selectedType, index) => (
           <option key={index} value={selectedType}>
@@ -85,7 +84,7 @@ const CreateIncomeForm = ({ onCreateIncome }: any) => {
         type="submit"
         className="p-2 bg-blue-500 hover:bg-blue-600 rounded text-white mt-6"
       >
-        Add Income
+        Pievienot ienākumu
       </button>
 
       {/* <button onClick={() => setIsCreateModalOpen(true)}></button> */}

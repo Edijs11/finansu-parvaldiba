@@ -4,10 +4,7 @@ import { savingGoalShema, transactionShema } from '@/app/lib/shemas';
 import { TransactionType } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET({ params }: { params: { id: string } }) {
   const id = params.id;
   const transactions = await prisma.transaction.findMany({
     where: {
@@ -62,7 +59,7 @@ export async function POST(
   } catch (error) {
     console.log('create error:', error);
     return new NextResponse(
-      JSON.stringify({ error: 'some error posting saving goal' }),
+      JSON.stringify({ error: 'some error posting transaction' }),
       { status: 500 }
     );
   }

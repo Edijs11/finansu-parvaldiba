@@ -130,12 +130,13 @@ const Debt = () => {
         <table>
           <thead>
             <tr>
-              <th className="px-4 py-2">Name</th>
-              <th className="px-4 py-2">Amount</th>
-              <th className="px-4 py-2">Saved</th>
-              <th className="px-4 py-2">Interest Rate</th>
-              <th className="px-4 py-2">Start Date</th>
-              <th className="px-4 py-2">End Date</th>
+              <th className="px-4 py-2 ">Nosaukums</th>
+              <th className="px-4 py-2">Ietaupītais apjoms</th>
+              <th className="px-4 py-2">Kopējais apjoms</th>
+              <th className="px-4 py-2">Procentu likme</th>
+              <th className="px-4 py-2">Sākuma datums</th>
+              <th className="px-4 py-2">Beigu datums</th>
+              <th className="px-4 py-2">Darbības</th>
             </tr>
           </thead>
           <tbody>
@@ -152,7 +153,7 @@ const Debt = () => {
                     onClick={() => handleEdit(debt.debtId)}
                     className="bg-orange-300 hover:bg-orange-400 rounded text-white p-2 w-[70px]"
                   >
-                    Edit
+                    Rediģēt
                   </button>
                 </td>
                 <td>
@@ -160,7 +161,7 @@ const Debt = () => {
                     onClick={() => deleteDebt(debt.debtId)}
                     className="bg-red-500 hover:bg-red-600 rounded text-white p-2 w-[70px]"
                   >
-                    Delete
+                    Dzēst
                   </button>
                 </td>
               </tr>

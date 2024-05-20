@@ -32,19 +32,19 @@ const CreateTransactionForm = ({ onCreateTransaction }: any) => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col mt-2">
-      <h1 className="text-xl place-self-center">Add Transaction</h1>
-      <p className="mt-2">Amount:</p>
+      <h1 className="text-xl place-self-center">Pievienot Transakciju</h1>
+      <p className="mt-2">Apjoms:</p>
       <input
         {...register('amount', { valueAsNumber: true })}
         type="number"
         step="0.01"
-        placeholder="Amount"
+        placeholder="Apjoms"
         className="text-black rounded-sm"
       />
       {errors.amount && (
         <p className="text-red-500">{`${errors.amount.message}`}</p>
       )}
-      <p className="mt-2">Date:</p>
+      <p className="mt-2">Datums:</p>
       <input
         {...register('transactionDate')}
         type="date"
@@ -56,7 +56,7 @@ const CreateTransactionForm = ({ onCreateTransaction }: any) => {
         type="submit"
         className="p-2 bg-blue-500 hover:bg-blue-600 rounded text-white mt-6"
       >
-        Add Transaction
+        Pievienot transakciju
       </button>
     </form>
   );

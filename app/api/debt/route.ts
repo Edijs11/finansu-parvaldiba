@@ -41,7 +41,6 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const input = debtShema.parse(body);
-    // const { name, amount, date, type } = await req.json();
     const debt = await prisma.debt.create({
       data: {
         name: input.name,
@@ -55,10 +54,8 @@ export async function POST(req: NextRequest) {
     });
     return new NextResponse(JSON.stringify(debt), { status: 201 });
   } catch (error) {
-    console.log('create error:', error);
-    return new NextResponse(
-      JSON.stringify({ error: 'some error posting debt' }),
-      { status: 500 }
-    );
+    return new NextResponse(JSON.stringify({ error: 'error posting debt' }), {
+      status: 500,
+    });
   }
 }

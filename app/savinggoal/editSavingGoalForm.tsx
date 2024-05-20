@@ -53,22 +53,23 @@ const EditSavingGoalForm = ({ id }: { id: number }) => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col mt-2">
-      <p>Name:</p>
+      <h1 className="text-xl place-self-center">Rediģēt Taupīšanas Mērķi</h1>
+      <p>Nosaukums:</p>
       <input
         {...register('name')}
         type="text"
-        placeholder="Name"
+        placeholder="Nosaukums"
         className="text-black rounded-sm"
       />
       {errors.name && (
         <p className="text-red-500">{`${errors.name.message}`}</p>
       )}
 
-      <p className="mt-2">Saved:</p>
+      <p className="mt-2">Mērķa apjoms:</p>
       <input
         {...register('saved', { valueAsNumber: true })}
         type="number"
-        placeholder="Saved"
+        placeholder="0.00"
         step="0.01"
         className="text-black rounded-sm"
       />
@@ -81,24 +82,21 @@ const EditSavingGoalForm = ({ id }: { id: number }) => {
         {...register('startDate')}
         type="date"
         className="text-black rounded-sm"
-        required
       />
 
-      <p className="mt-2">End Date:</p>
+      <p className="mt-2">Beigu datums:</p>
       <input
         {...register('endDate')}
         type="date"
         className="text-black rounded-sm"
-        required
       />
 
       <button
         type="submit"
         className="p-2 bg-blue-500 hover:bg-blue-600 rounded text-white mt-6"
       >
-        Edit Saving Goal
+        Rediģēt taupīšanas mērķi
       </button>
-      {/* <button onClick={() => setIsCreateModalOpen(true)}></button> */}
     </form>
   );
 };

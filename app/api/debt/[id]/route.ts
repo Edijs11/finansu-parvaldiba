@@ -35,16 +35,16 @@ export async function GET(
 
 export async function PUT(req: NextRequest) {
   try {
-    // const { getUser } = getKindeServerSession();
-    // const user = await getUser();
+    const { getUser } = getKindeServerSession();
+    const user = await getUser();
 
-    // if (!user || user == null || !user.id) {
-    //   throw new Error('Something went wrong with authentication' + user);
-    // }
+    if (!user || user == null || !user.id) {
+      throw new Error('Something went wrong with authentication' + user);
+    }
 
-    // let dbUser = await prisma.user.findUnique({
-    //   where: { kindeId: user.id },
-    // });
+    let dbUser = await prisma.user.findUnique({
+      where: { kindeId: user.id },
+    });
 
     const body = await req.json();
     const inputDebt = debtShema.parse(body);
@@ -58,46 +58,16 @@ export async function PUT(req: NextRequest) {
         saved: Number(inputDebt.saved),
         startDate: inputDebt.startDate,
         endDate: inputDebt.endDate,
-        userId: inputDebt.userId,
+        userId: dbUser.id,
       },
     });
     return new NextResponse(JSON.stringify(debt), { status: 200 });
   } catch (error) {
-    return new NextResponse(
-      JSON.stringify({ error: 'error editing savingGoal' }),
-      {
-        status: 500,
-      }
-    );
+    return new NextResponse(JSON.stringify({ error: 'error editing debt' }), {
+      status: 500,
+    });
   }
 }
-
-// export async function PATCH(
-//   req: Request,
-//   { params }: { params: { id: string } }
-// ) {
-//   try {
-//     const body = await req.json();
-//     const inputIncome = createIncomeShema.parse(body);
-//     const income = await prisma.income.update({
-//       where: {
-//         id: { id: Number(params.id) },
-//       },
-//       data: {
-//         name: inputIncome.name,
-//         amount: Number(inputIncome.amount),
-//         date: inputIncome.date,
-//         type: inputIncome.type,
-//         userId: 1,
-//       },
-//     });
-//     return new NextResponse(JSON.stringify(income), { status: 200 });
-//   } catch (error) {
-//     return new NextResponse(JSON.stringify({ error: 'error editing income' }), {
-//       status: 500,
-//     });
-//   }
-// }
 
 export async function DELETE(
   req: NextRequest,
@@ -113,9 +83,6 @@ export async function DELETE(
     });
     return NextResponse.json(deleteDebt, { status: 200 });
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Error deleting income' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Error deleting debt' }, { status: 500 });
   }
 }

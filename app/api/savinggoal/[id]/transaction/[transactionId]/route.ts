@@ -2,10 +2,11 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function DELETE(
-  req: NextRequest,
-  { params }: { params: { transactionId: string } }
-) {
+export async function DELETE({
+  params,
+}: {
+  params: { transactionId: string };
+}) {
   try {
     const transactionId = Number(params.transactionId);
 
@@ -17,7 +18,6 @@ export async function DELETE(
     });
 
     const { savingGoalId, amount } = transaction;
-    // console.log(goalId, amount);
     await prisma.savingGoal.update({
       where: { savingId: savingGoalId },
       data: {
@@ -34,7 +34,7 @@ export async function DELETE(
   } catch (error) {
     console.log(error);
     return NextResponse.json(
-      { error: 'Error deleting savingGoal' },
+      { error: 'Error deleting transaction' },
       { status: 500 }
     );
   }

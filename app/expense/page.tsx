@@ -260,12 +260,11 @@ const Expense = () => {
 
       {expenses.length ? (
         <div className="mt-6 max-w-full">
-          <Frame title="Expenses">
+          <Frame title="Izdevumi">
             <BarChart width={width} height={height} data={[]}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
               <YAxis />
-              {/* <Legend /> */}
               <Tooltip content={<CustomTooltip />} />
               <Bar
                 dataKey="amount"
@@ -284,7 +283,7 @@ const Expense = () => {
       )}
       {expenseTypeAndCount.length > 1 ? (
         <div className="mt-6 max-w-full">
-          <Frame title="Types">
+          <Frame title="Tipu sadalījums">
             <PieChart width={500} height={400} className="-mt-6">
               <Legend />
               <Tooltip content={<CustomTooltip />} />
@@ -292,9 +291,6 @@ const Expense = () => {
                 data={expenseTypeAndCount}
                 dataKey="amount"
                 nameKey="type"
-                // cx="50%"
-                // cy="50%"
-                // outerRadius={100}
                 fill="#8884d8"
                 onMouseOver={() => (tooltip = 'amount')}
               >
@@ -317,17 +313,17 @@ const Expense = () => {
           className="p-2 bg-green-500 hover:bg-green-600 rounded text-white mt-6 w-[120px] place-self-end"
           onClick={() => setIsCreateModalOpen(true)}
         >
-          Add expense
+          Pievienot
         </button>
         <table>
           <thead className="border-b border-gray-400">
             <tr>
-              <th className="px-4 py-2">Name</th>
-              <th className="px-4 py-2">Description</th>
-              <th className="px-4 py-2">Amount</th>
-              <th className="px-4 py-2">Type</th>
-              <th className="px-4 py-2">Date</th>
-              <th className="px-2 py-2">Actions</th>
+              <th className="px-4 py-2">Nosaukums</th>
+              <th className="px-4 py-2">Apraksts</th>
+              <th className="px-4 py-2">Apjoms</th>
+              <th className="px-4 py-2">Tips</th>
+              <th className="px-4 py-2">Datums</th>
+              <th className="px-2 py-2">Darbības</th>
             </tr>
           </thead>
           <tbody>
@@ -347,14 +343,14 @@ const Expense = () => {
                     className="bg-orange-300 hover:bg-orange-400 rounded text-white p-2 w-[70px]"
                     onClick={() => handleEdit(expense.expenseId)}
                   >
-                    Edit
+                    Rediģēt
                   </button>
 
                   <button
                     onClick={() => handleDelete(expense.expenseId)}
                     className="bg-red-500 hover:bg-red-600 rounded text-white p-2 w-[70px]"
                   >
-                    Delete
+                    Dzēst
                   </button>
                 </td>
               </tr>

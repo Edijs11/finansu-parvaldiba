@@ -262,7 +262,7 @@ const Income = () => {
       )}
       {incomes.length ? (
         <div className="mt-6 px-2 max-w-full">
-          <Frame title="Incomes">
+          <Frame title="Ienākumi">
             <BarChart width={width} height={height} data={[]}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
@@ -285,7 +285,7 @@ const Income = () => {
       )}
       {incomeTypeAndCount.length > 1 ? (
         <div className="mt-6">
-          <Frame title="Types">
+          <Frame title="Tipu sadalījums pret summu">
             <PieChart width={500} height={400} className="-mt-6">
               <Legend />
               <Tooltip content={<CustomTooltip />} />
@@ -293,9 +293,6 @@ const Income = () => {
                 data={incomeTypeAndCount}
                 dataKey="amount"
                 nameKey="type"
-                // cx="50%"
-                // cy="50%"
-                // outerRadius={100}
                 fill="#8884d8"
                 onMouseOver={() => (tooltip = 'amount')}
               >
@@ -317,7 +314,7 @@ const Income = () => {
           className="p-2 bg-green-500 hover:bg-green-600 rounded text-white w-[120px] place-self-end"
           onClick={() => setIsCreateModalOpen(true)}
         >
-          Add income
+          Pievienot
         </button>
         {/* <div className="flex justify-between place-self-end mt-2">
           <div className="mt-2">
@@ -353,10 +350,10 @@ const Income = () => {
         <table className="mt-2">
           <thead className="border-b border-gray-400">
             <tr className="mb-2">
-              <th className="px-4 py-2">Name</th>
-              <th className="px-4 py-2">Amount</th>
-              <th className="px-4 py-2">Type</th>
-              <th className="px-4 py-2">Date</th>
+              <th className="px-4 py-2">Nosaukums</th>
+              <th className="px-4 py-2">Apjoms</th>
+              <th className="px-4 py-2">Tips</th>
+              <th className="px-4 py-2">Datums</th>
             </tr>
           </thead>
           <tbody>
@@ -371,7 +368,7 @@ const Income = () => {
                     onClick={() => handleEdit(income.incomeId)}
                     className="bg-orange-300 hover:bg-orange-400 rounded text-white p-2 w-[70px]"
                   >
-                    Edit
+                    Rediģēt
                   </button>
                 </td>
                 <td>
@@ -379,7 +376,7 @@ const Income = () => {
                     onClick={() => handleDelete(income.incomeId)}
                     className="bg-red-500 hover:bg-red-600 rounded text-white p-2 w-[70px]"
                   >
-                    Delete
+                    Dzēst
                   </button>
                 </td>
               </tr>

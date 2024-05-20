@@ -26,6 +26,8 @@ const GoalTransaction = () => {
   const goal = JSON.parse(savingGoal);
   // const { replace } = useRouter();
   // const path = usePathname();
+  // const par = new URLSearchParams(window.location.search);
+  // console.log(par);
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [newTransaction, setNewTransaction] = useState<Transaction>({
@@ -113,11 +115,11 @@ const GoalTransaction = () => {
         <table className="mt-2">
           <thead className="border-b border-gray-400">
             <tr className="mb-2">
-              <th className="px-4 py-2 ">Name</th>
-              <th className="px-4 py-2">Amount</th>
-              <th className="px-4 py-2">Saved</th>
-              <th className="px-4 py-2">Start Date</th>
-              <th className="px-4 py-2">End Date</th>
+              <th className="px-4 py-2 ">Nosaukums</th>
+              <th className="px-4 py-2">Ietaupītais apjoms</th>
+              <th className="px-4 py-2">Kopējais apjoms</th>
+              <th className="px-4 py-2">Sākuma datums</th>
+              <th className="px-4 py-2">Beigu datums</th>
             </tr>
           </thead>
           <tbody>
@@ -133,7 +135,7 @@ const GoalTransaction = () => {
       </div>
       <div>
         <h1 className="mt-8 flex flex-col items-center text-2xl">
-          Transactions
+          Transakcijas
         </h1>
         {isCreateTransactionModalOpen && (
           <Modal onClose={() => setIsCreateTransactionModalOpen(false)}>
@@ -145,15 +147,15 @@ const GoalTransaction = () => {
             className="p-2 bg-green-500 hover:bg-green-600 rounded text-white mt-6 w-[150px] place-self-end"
             onClick={() => setIsCreateTransactionModalOpen(true)}
           >
-            Add Transaction
+            Pievienot
           </button>
         </div>
         <table className="mt-4">
           <thead>
             <tr>
-              <th className="px-4 py-2 ">Amount</th>
-              <th className="px-4 py-2 ">Date</th>
-              <th>Actions</th>
+              <th className="px-4 py-2 ">Transakcijas apjoms</th>
+              <th className="px-4 py-2 ">Datums</th>
+              <th>Darbības</th>
             </tr>
           </thead>
           <tbody>
@@ -166,14 +168,14 @@ const GoalTransaction = () => {
                     onClick={() => console.log('hi')}
                     className="bg-orange-300 hover:bg-orange-400 rounded text-white p-2 w-[70px]"
                   >
-                    Edit
+                    Rediģēt
                   </button>
 
                   <button
                     onClick={() => deleteTransaction(transaction.transactionId)}
                     className="bg-red-500 hover:bg-red-600 rounded text-white p-2 w-[70px]"
                   >
-                    Delete
+                    Dzēst
                   </button>
                 </td>
               </tr>

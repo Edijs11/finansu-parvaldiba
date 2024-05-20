@@ -53,33 +53,34 @@ const EditExpenseForm = ({ id }: { id: number }) => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col mt-2">
-      <p>Name:</p>
+      <h1 className="text-xl place-self-center">Rediģēt izdevumu</h1>
+      <p>Nosaukums:</p>
       <input
         {...register('name')}
         type="text"
-        placeholder="Name"
+        placeholder="Nosaukums"
         className="text-black rounded-sm"
       />
       {errors.name && (
         <p className="text-red-500">{`${errors.name.message}`}</p>
       )}
 
-      <p>Description:</p>
+      <p>Apraksts:</p>
       <input
         {...register('description')}
         type="text"
-        placeholder="Description"
+        placeholder="Apraksts"
         className="text-black rounded-sm"
       />
       {errors.description && (
         <p className="text-red-500">{`${errors.description.message}`}</p>
       )}
 
-      <p className="mt-2">Amount:</p>
+      <p className="mt-2">Apjoms:</p>
       <input
         {...register('amount', { valueAsNumber: true })}
         type="number"
-        placeholder="Amount"
+        placeholder="Apjoms"
         step="0.01"
         className="text-black rounded-sm"
       />
@@ -87,14 +88,14 @@ const EditExpenseForm = ({ id }: { id: number }) => {
         <p className="text-red-500">{`${errors.amount.message}`}</p>
       )}
 
-      <p className="mt-2">Date:</p>
+      <p className="mt-2">Datums:</p>
       <input
         {...register('date')}
         type="date"
         className="text-black rounded-sm"
         required
       />
-      <p className="mt-2">Type:</p>
+      <p className="mt-2">Tips:</p>
       <select {...register('type')} className="text-black rounded-sm">
         {Object.values(expenseType).map((selectedType, index) => (
           <option key={index} value={selectedType}>
@@ -106,7 +107,7 @@ const EditExpenseForm = ({ id }: { id: number }) => {
         type="submit"
         className="p-2 bg-blue-500 hover:bg-blue-600 rounded text-white mt-6"
       >
-        Add Expense
+        Rediģēt izdevumu
       </button>
       {/* <button onClick={() => setIsCreateModalOpen(true)}></button> */}
     </form>

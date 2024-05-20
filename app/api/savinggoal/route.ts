@@ -37,7 +37,6 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const input = savingGoalShema.parse(body);
-    // const { name, amount, date, type } = await req.json();
     const savingGoal = await prisma.savingGoal.create({
       data: {
         name: input.name,
@@ -52,7 +51,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.log('create error:', error);
     return new NextResponse(
-      JSON.stringify({ error: 'some error posting savingGoal' }),
+      JSON.stringify({ error: 'Error posting savingGoal' }),
       { status: 500 }
     );
   }

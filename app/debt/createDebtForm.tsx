@@ -32,12 +32,12 @@ const CreateDebtForm = ({ onCreateDebt }: any) => {
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col mt-2">
-      <h1 className="text-xl place-self-center">Add Debt</h1>
-      <p className="mt-4">Name:</p>
+      <h1 className="text-xl place-self-center">Pievienot Parādu</h1>
+      <p className="mt-4">Nosaukums:</p>
       <input
         {...register('name')}
         type="text"
-        placeholder="Name"
+        placeholder="Nosaukums"
         className="text-black rounded-sm"
         required
       />
@@ -45,50 +45,37 @@ const CreateDebtForm = ({ onCreateDebt }: any) => {
         <p className="text-red-500">{`${errors.name.message}`}</p>
       )}
 
-      {/* <p className="mt-2">Amount:</p>
-      <input
-        {...register('amount', { valueAsNumber: true })}
-        type="number"
-        step="0.01"
-        placeholder="Amount"
-        className="text-black rounded-sm"
-      />
-      {errors.amount && (
-        <p className="text-red-500">{`${errors.amount.message}`}</p>
-      )} */}
-
-      <p className="mt-2">Saved:</p>
+      <p className="mt-2">Ietaupītais apjoms:</p>
       <input
         {...register('saved', { valueAsNumber: true })}
         type="number"
         step="0.01"
-        placeholder="Saved"
+        placeholder="Ietaupītais apjoms"
         className="text-black rounded-sm"
       />
       {errors.saved && (
         <p className="text-red-500">{`${errors.saved.message}`}</p>
       )}
 
-      <p className="mt-2">Interest rate:</p>
+      <p className="mt-2">Procentu likme:</p>
       <input
         {...register('interest_rate', { valueAsNumber: true })}
         type="number"
-        step="0.01"
-        placeholder="interest rate"
+        placeholder="Procentu likme"
         className="text-black rounded-sm"
       />
       {errors.interest_rate && (
         <p className="text-red-500">{`${errors.interest_rate.message}`}</p>
       )}
 
-      <p className="mt-2">Start Date:</p>
+      <p className="mt-2">Sākuma datums:</p>
       <input
         {...register('startDate')}
         type="date"
         className="text-black rounded-sm"
         required
       />
-      <p className="mt-2">End Date:</p>
+      <p className="mt-2">Beigu datums:</p>
       <input
         {...register('endDate')}
         type="date"
@@ -100,9 +87,8 @@ const CreateDebtForm = ({ onCreateDebt }: any) => {
         type="submit"
         className="p-2 bg-blue-500 hover:bg-blue-600 rounded text-white mt-6"
       >
-        Add Debt
+        Pievienot parādu
       </button>
-      {/* <button onClick={() => setIsCreateModalOpen(true)}></button> */}
     </form>
   );
 };

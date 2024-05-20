@@ -35,16 +35,16 @@ export async function GET(
 
 export async function PUT(req: NextRequest) {
   try {
-    // const { getUser } = getKindeServerSession();
-    // const user = await getUser();
+    const { getUser } = getKindeServerSession();
+    const user = await getUser();
 
-    // if (!user || user == null || !user.id) {
-    //   throw new Error('Something went wrong with authentication' + user);
-    // }
+    if (!user || user == null || !user.id) {
+      throw new Error('Something went wrong with authentication' + user);
+    }
 
-    // let dbUser = await prisma.user.findUnique({
-    //   where: { kindeId: user.id },
-    // });
+    let dbUser = await prisma.user.findUnique({
+      where: { kindeId: user.id },
+    });
 
     const body = await req.json();
     const inputExpense = expenseShema.parse(body);
@@ -58,7 +58,7 @@ export async function PUT(req: NextRequest) {
         amount: Number(inputExpense.amount),
         date: inputExpense.date,
         type: inputExpense.type,
-        userId: inputExpense.userId,
+        userId: dbUser.id,
       },
     });
     return new NextResponse(JSON.stringify(expense), { status: 200 });
@@ -73,35 +73,35 @@ export async function PUT(req: NextRequest) {
   }
 }
 
-export async function PATCH(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
-  try {
-    const body = await req.json();
-    const inputExpense = expenseShema.parse(body);
-    const expense = await prisma.expense.update({
-      where: {
-        id: { id: Number(params.id) },
-      },
-      data: {
-        name: inputExpense.name,
-        amount: Number(inputExpense.amount),
-        date: inputExpense.date,
-        type: inputExpense.type,
-        userId: 1,
-      },
-    });
-    return new NextResponse(JSON.stringify(expense), { status: 200 });
-  } catch (error) {
-    return new NextResponse(
-      JSON.stringify({ error: 'error editing expense' }),
-      {
-        status: 500,
-      }
-    );
-  }
-}
+// export async function PATCH(
+//   req: Request,
+//   { params }: { params: { id: string } }
+// ) {
+//   try {
+//     const body = await req.json();
+//     const inputExpense = expenseShema.parse(body);
+//     const expense = await prisma.expense.update({
+//       where: {
+//         id: { id: Number(params.id) },
+//       },
+//       data: {
+//         name: inputExpense.name,
+//         amount: Number(inputExpense.amount),
+//         date: inputExpense.date,
+//         type: inputExpense.type,
+//         userId: 1,
+//       },
+//     });
+//     return new NextResponse(JSON.stringify(expense), { status: 200 });
+//   } catch (error) {
+//     return new NextResponse(
+//       JSON.stringify({ error: 'error editing expense' }),
+//       {
+//         status: 500,
+//       }
+//     );
+//   }
+// }
 
 export async function DELETE(
   req: NextRequest,
