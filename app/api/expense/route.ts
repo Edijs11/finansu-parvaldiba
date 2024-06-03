@@ -5,23 +5,36 @@ import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET() {
-  const { getUser } = getKindeServerSession();
-  const user = await getUser();
+  try {
+    const { getUser } = getKindeServerSession();
+    const user = await getUser();
 
-  if (!user || user == null || !user.id) {
-    throw new Error('Something went wrong with authentication' + user);
+    if (!user || user == null || !user.id) {
+      throw new Error('Something went wrong with authentication' + user);
+    }
+
+    let dbUser = await prisma.user.findUnique({
+      where: { kindeId: user.id },
+    });
+
+    const expenses = await prisma.expense.findMany({
+      where: {
+        userId: dbUser.id,
+      },
+    });
+    const expensesWithParsedAmount = expenses.map((expense: any) => ({
+      ...expense,
+      amount: parseFloat(expense.amount),
+    }));
+    return NextResponse.json(expensesWithParsedAmount);
+  } catch (error) {
+    return new NextResponse(
+      JSON.stringify({ error: 'error getting expenses' }),
+      {
+        status: 500,
+      }
+    );
   }
-
-  let dbUser = await prisma.user.findUnique({
-    where: { kindeId: user.id },
-  });
-
-  const expenses = await prisma.expense.findMany({
-    where: {
-      userId: dbUser.id,
-    },
-  });
-  return NextResponse.json(expenses);
 }
 
 export async function POST(req: NextRequest) {
@@ -39,7 +52,6 @@ export async function POST(req: NextRequest) {
 
     const body = await req.json();
     const input = expenseShema.parse(body);
-    // const { name, amount, date, type } = await req.json();
     const expense = await prisma.expense.create({
       data: {
         name: input.name,

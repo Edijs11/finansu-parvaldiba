@@ -4,7 +4,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { transactionShema } from '../../../lib/shemas';
-import axios from 'axios';
 
 type TCreateTransactionShema = z.infer<typeof transactionShema>;
 

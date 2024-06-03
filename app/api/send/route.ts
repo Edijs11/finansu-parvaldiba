@@ -1,3 +1,4 @@
+import ContactEmail from '@/app/contactus/contactEmail';
 import prisma from '@/app/lib/db';
 import { email } from '@/app/lib/shemas';
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
@@ -33,8 +34,9 @@ export async function POST(req: NextRequest) {
       from: 'Acme <onboarding@resend.dev>', //add domain
       to: 'financemanagement004@gmail.com',
       reply_to: userEmail,
-      subject: emailInput.subject,
+      subject: emailInput.type,
       text: emailInput.message,
+      // react: ContactEmail({emailInput.subject, emailInput.message})
     });
 
     if (error) {

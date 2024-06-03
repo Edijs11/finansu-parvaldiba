@@ -5,12 +5,10 @@ import { incomeType } from '@prisma/client';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { savingGoalShema } from '../lib/shemas';
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useEffect } from 'react';
 
 type TCreateSavingGoalShema = z.infer<typeof savingGoalShema>;
-const EditSavingGoalForm = ({ id }: { id: number }) => {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+const EditSavingGoalForm = ({ savingGoalAction, onEditSavingGoal }: any) => {
   const {
     register,
     handleSubmit,
@@ -20,22 +18,12 @@ const EditSavingGoalForm = ({ id }: { id: number }) => {
     resolver: zodResolver(savingGoalShema),
   });
 
-  const getCurrentSavingGoal = async () => {
-    try {
-      const current = await axios.get(`${apiUrl}/api/savinggoal/${id}`);
-      return current.data;
-    } catch {
-      new Error('could not get the current user');
-      return null;
-    }
-  };
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await getCurrentSavingGoal();
-        reset(data);
+        reset(savingGoalAction);
       } catch {
-        new Error('cant get data');
+        new Error('could not get the saving goal');
       }
     };
     fetchData();
@@ -44,10 +32,9 @@ const EditSavingGoalForm = ({ id }: { id: number }) => {
   const onSubmit: SubmitHandler<TCreateSavingGoalShema> = async (data) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      const resp = await axios.put(`${apiUrl}/api/savinggoal/${id}`, data);
-      reset();
+      onEditSavingGoal(data.savingId, data);
     } catch {
-      new Error('could not submit');
+      new Error('could not submit saving goal');
     }
   };
 
@@ -67,14 +54,14 @@ const EditSavingGoalForm = ({ id }: { id: number }) => {
 
       <p className="mt-2">Mērķa apjoms:</p>
       <input
-        {...register('saved', { valueAsNumber: true })}
+        {...register('amount', { valueAsNumber: true })}
         type="number"
         placeholder="0.00"
         step="0.01"
         className="text-black rounded-sm"
       />
-      {errors.saved && (
-        <p className="text-red-500">{`${errors.saved.message}`}</p>
+      {errors.amount && (
+        <p className="text-red-500">{`${errors.amount.message}`}</p>
       )}
 
       <p className="mt-2">Start Date:</p>

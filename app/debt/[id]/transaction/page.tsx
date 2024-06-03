@@ -3,88 +3,29 @@
 import { LoginLink, useKindeBrowserClient } from '@kinde-oss/kinde-auth-nextjs';
 import { TransactionType } from '@prisma/client';
 import axios from 'axios';
-import { usePathname, useSearchParams, redirect } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import CreateTransactionForm from './createTransaction';
+// import CreateTransactionForm from './createTransaction';
 import Modal from '../../../components/modal';
 import { formatDate } from '@/app/components/functions';
-import { useRouter } from 'next/navigation';
+import CreateTransactionForm from './createTransaction';
 
 interface Transaction {
   transactionId: number;
   amount: number;
   date: Date;
   type: TransactionType;
-  savingGoalId: number;
+  debtId: number;
 }
 
-const GoalTransaction = () => {
+const DebtTransaction = () => {
   const { isAuthenticated, isLoading } = useKindeBrowserClient();
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  // const router = useRouter();
-  // const { replace } = useRouter();
   const searchParams = useSearchParams();
-  const savingGoal = searchParams.get('savingGoal') ?? '';
-  const goal = savingGoal ? JSON.parse(savingGoal) : null;
-  const pathname = usePathname();
-  // console.log(searchParams);
-  // const newUrl = new URLSearchParams(searchParams.toString());
-  // console.log(newUrl.get('saved'));
-  const handleSavedChange = (saved: number) => {
-    const params = new URLSearchParams(window.location.search);
-    // redirect(`${apiUrl}/api/savinggoal/${goal.savingId}/transaction`);
-    // params.set('saved', '10000');
-    // const newUrl = `${window.location.pathname}?${params.toString()}`;
-    // window.history.replaceState(null, '', newUrl);
-    // console.log(newUrl);
+  const currentDebt = searchParams.get('debt') ?? '';
+  const debt = currentDebt ? JSON.parse(currentDebt) : null;
 
-    // const decodedUrl = decodeURIComponent(params.toString());
-    // const dec = new URLSearchParams(decodedUrl);
-    // dec.set('saved', (Number(goal.saved) + saved).toString());
-    // const encodedUrl = encodeURIComponent(dec.toString());
-    // console.log(encodedUrl);
-
-    // const newUrl = `${pathname}?${encodedUrl}`;
-    // console.log(newUrl);
-    // window.history.replaceState(null, '', newUrl);
-
-    // if (saved) {
-    //   const newVal = parseFloat(goal.saved) + saved;
-    //   params.set('saved', newVal.toString());
-    // }
-    // console.log(`${window.location.search}?${params.toString()}`);
-    // goal.saved = parseFloat(goal.saved) + saved;
-    // redirect(`${pathname}?${params.toString()}`);
-  };
-
-  // const handleGoalTransactions = (saved: number) => {
-  //   const params = new URLSearchParams(searchParams.toString());
-  //   const savedAmount = params.get('saved');
-  //   // const newVal = savedAmount ? parseFloat(savedAmount) + saved : savedAmount;
-
-  //   console.log(savedAmount);
-  //   // if (!isNaN(newVal)) {
-  //   //   params.set('saved', newVal.toString());
-  //   // }
-  // };
-
-  // console.log(newUrl);
-  // const handleNewTransaction = (amount: string) => {
-  //   // const params = new URLSearchParams(searchParams);
-  //   // const currentAmount = params.get('saved') || 0;
-  //   // console.log(currentAmount);
-  //   // params.set('amount', amount);
-  //   // router.push(`${pathname}?${params.toString()}`);
-  //   const currentAmount = searchParams.get('saved');
-  //   console.log(currentAmount);
-  //   if (currentAmount !== null) {
-  //     const newAmount = parseFloat(currentAmount) + amount;
-
-  //     const newUrl = new URLSearchParams(searchParams.toString());
-  //     newUrl.set('saved', newAmount);
-  //     router.push(`${window.location.pathname}?${newUrl.toString()}`);
-  //   }
-  // };
+  // const router = useRouter();
 
   // const path = usePathname();
   // const par = new URLSearchParams(window.location.search);
@@ -95,8 +36,8 @@ const GoalTransaction = () => {
     transactionId: 1,
     amount: 0,
     date: new Date(),
-    type: 'GOAL',
-    savingGoalId: 1,
+    type: 'DEBT',
+    debtId: 1,
   });
   const [isCreateTransactionModalOpen, setIsCreateTransactionModalOpen] =
     useState(false);
@@ -109,7 +50,7 @@ const GoalTransaction = () => {
     const getTransactions = async () => {
       try {
         const response = await axios.get(
-          `${apiUrl}/api/savinggoal/${goal.savingId}/transaction`
+          `${apiUrl}/api/debt/${debt.debtId}/transaction`
         );
         setTransactions(response.data);
       } catch (error) {
@@ -126,7 +67,7 @@ const GoalTransaction = () => {
       //   transaction
       // );
       const response = await axios.post(
-        `${apiUrl}/api/savinggoal/${goal.savingId}/transaction`,
+        `${apiUrl}/api/debt/${debt.debtId}/transaction`,
         transaction
       );
       // goal.amount = goal.amount + transaction.amount;
@@ -134,16 +75,14 @@ const GoalTransaction = () => {
       // updateUrl.set('amount', JSON.stringify(goal));
       // replace(`${path}?${updateUrl.toString()}`);
       setTransactions([response.data, ...transactions]);
-      // handleNewTransaction(response.data.amount);
-      handleSavedChange(transaction.amount);
       setNewTransaction({
         transactionId: 1,
         amount: 0,
         date: new Date(),
         type: 'GOAL',
-        savingGoalId: 1,
+        debtId: 1,
       });
-      goal.amount = goal.amount + transaction.amount;
+      debt.amount = debt.amount + transaction.amount;
       // const updatedGoal = JSON.stringify(goal);
       // router.push(
       //   {
@@ -166,9 +105,7 @@ const GoalTransaction = () => {
 
   const deleteTransaction = async (id: number) => {
     try {
-      await axios.delete(
-        `${apiUrl}/api/savinggoal/${goal.savingId}/transaction/${id}`
-      );
+      await axios.delete(`${apiUrl}/api/debt/${debt.debtId}/transaction/${id}`);
       setTransactions(
         transactions.filter((transaction) => transaction.transactionId != id)
       );
@@ -185,12 +122,6 @@ const GoalTransaction = () => {
     );
   return isAuthenticated ? (
     <div className="flex flex-col items-center justify-between p-12">
-      {isCreateTransactionModalOpen && (
-        <Modal onClose={() => setIsCreateTransactionModalOpen(false)}>
-          <CreateTransactionForm onCreateTransaction={createTransaction} />
-        </Modal>
-      )}
-
       <div className="flex flex-row space-x-5">
         <table className="mt-2">
           <thead className="border-b border-gray-400">
@@ -198,26 +129,32 @@ const GoalTransaction = () => {
               <th className="px-4 py-2 ">Nosaukums</th>
               <th className="px-4 py-2">Ietaupītais apjoms</th>
               <th className="px-4 py-2">Kopējais apjoms</th>
+              <th className="px-4 py-2">Procentu likme</th>
               <th className="px-4 py-2">Sākuma datums</th>
               <th className="px-4 py-2">Beigu datums</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td className="px-4 py-2">{goal.name}</td>
-              <td className="px-4 py-2">{goal.saved}€</td>
-              <td className="px-4 py-2">{goal.amount}€</td>
-              <td className="px-4 py-2">{goal.startDate}</td>
-              <td className="px-4 py-2">{goal.endDate}</td>
+              <td className="px-4 py-2">{debt.name}</td>
+              <td className="px-4 py-2">{debt.amount}€</td>
+              <td className="px-4 py-2">{debt.saved}€</td>
+              <td className="px-4 py-2">{debt.interest_rate}%</td>
+              <td className="px-4 py-2">{debt.startDate}</td>
+              <td className="px-4 py-2">{debt.endDate}</td>
             </tr>
           </tbody>
         </table>
       </div>
       <div>
         <h1 className="mt-8 flex flex-col items-center text-2xl">
-          Taupīšanas Mērķa Transakcijas
+          Parāda Transakcijas
         </h1>
-
+        {isCreateTransactionModalOpen && (
+          <Modal onClose={() => setIsCreateTransactionModalOpen(false)}>
+            <CreateTransactionForm onCreateTransaction={createTransaction} />
+          </Modal>
+        )}
         <div className="flex flex-col">
           <button
             className="p-2 bg-green-500 hover:bg-green-600 rounded text-white mt-6 w-[100px] place-self-end"
@@ -241,6 +178,13 @@ const GoalTransaction = () => {
                 <td className="px-4 py-2">{formatDate(transaction.date)}</td>
                 <td className="px-4 py-2">
                   <button
+                    onClick={() => console.log('hi')}
+                    className="bg-orange-300 hover:bg-orange-400 rounded text-white p-2 w-[70px]"
+                  >
+                    Rediģēt
+                  </button>
+
+                  <button
                     onClick={() => deleteTransaction(transaction.transactionId)}
                     className="bg-red-500 hover:bg-red-600 rounded text-white p-2 w-[70px]"
                   >
@@ -260,4 +204,4 @@ const GoalTransaction = () => {
     </div>
   );
 };
-export default GoalTransaction;
+export default DebtTransaction;

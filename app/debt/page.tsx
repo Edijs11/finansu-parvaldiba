@@ -1,14 +1,15 @@
 'use client';
 
-import { incomeType, User } from '@prisma/client';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import Modal from '../components/modal';
-import { number } from 'zod';
 import { LoginLink, useKindeBrowserClient } from '@kinde-oss/kinde-auth-nextjs';
 import CreateDebtForm from './createDebtForm';
 import EditDebtForm from './editDebtForm';
-// import UserComponent from './components/IncomeComponent';
+import { formatDate, precentageCalculation } from '../components/functions';
+import Link from 'next/link';
+import Frame from '../components/frame';
+import DeleteModal from '../components/deleteModal';
 
 interface Debt {
   debtId: number;
@@ -19,6 +20,16 @@ interface Debt {
   startDate: Date;
   endDate: Date;
   userId: number;
+}
+
+export interface CreateDebt {
+  name: string;
+  amount: number;
+  saved: number;
+  interest_rate: number;
+  startDate: Date;
+  endDate: Date;
+  userId?: number;
 }
 
 const Debt = () => {
@@ -39,8 +50,9 @@ const Debt = () => {
   //   name: '',
   // });
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [debtId, setDebtId] = useState(0);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<number>(0);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
     const fetchDebt = async () => {
@@ -54,26 +66,13 @@ const Debt = () => {
     fetchDebt();
   }, [newDebt]);
 
-  const handleEdit = (id: number) => {
-    setIsEditModalOpen(true);
-    setDebtId(id);
-  };
-
-  const formatDate = (dateString: Date) => {
-    const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}.${month}.${year}.`;
-  };
-
   const formatedDebts = debts.map((debt) => ({
     ...debt,
     startDate: formatDate(debt.startDate),
     endDate: formatDate(debt.endDate),
   }));
 
-  const createDebt = async (debt: Debt) => {
+  const createDebt = async (debt: CreateDebt) => {
     try {
       const response = await axios.post(`${apiUrl}/api/debt`, debt);
       setDebts([response.data, ...debts]);
@@ -92,6 +91,42 @@ const Debt = () => {
     }
   };
 
+  const callEditModal = async (id: number) => {
+    const current = await axios.get(`${apiUrl}/api/debt/${id}`);
+    const formatedStartDate = new Date(current.data.startDate)
+      .toISOString()
+      .split('T')[0];
+    const formatedEndDate = new Date(current.data.endDate)
+      .toISOString()
+      .split('T')[0];
+    setNewDebt({
+      ...current.data,
+      startDate: formatedStartDate,
+      endDate: formatedEndDate,
+    });
+    setIsEditModalOpen(true);
+    return current.data;
+  };
+
+  const editDebt = async (id: number, updateDebt: Debt) => {
+    try {
+      await axios.put(`${apiUrl}/api/debt/${id}`, newDebt);
+      setNewDebt({
+        debtId: 1,
+        name: '',
+        amount: 0,
+        saved: 0,
+        interest_rate: 0,
+        startDate: new Date(),
+        endDate: new Date(),
+        userId: 1,
+      });
+      setIsEditModalOpen(false);
+    } catch (error) {
+      console.error('Error editing saving goal:', error);
+    }
+  };
+
   const deleteDebt = async (id: number) => {
     try {
       await axios.delete(`${apiUrl}/api/debt/${id}`);
@@ -99,7 +134,17 @@ const Debt = () => {
     } catch (error) {
       console.error('Error deleting debt:', error);
     }
+    setConfirmDelete(false);
   };
+  const handleDelete = (id: number) => {
+    setDeleteId(id);
+    setConfirmDelete(true);
+  };
+
+  const debtPrecentage = debts.map((debt) => ({
+    name: debt.name,
+    precentage: precentageCalculation(debt.saved, debt.amount).toFixed(0),
+  }));
 
   if (isLoading)
     return (
@@ -109,71 +154,117 @@ const Debt = () => {
     );
   return isAuthenticated ? (
     <div className="flex min-h-screen flex-col items-center justify-between p-24">
-      {isModalOpen && (
-        <Modal onClose={() => setIsModalOpen(false)}>
-          <CreateDebtForm onCreateDebt={createDebt} />
-        </Modal>
-      )}
-      {isEditModalOpen && (
-        <Modal onClose={() => setIsEditModalOpen(false)}>
-          <EditDebtForm id={debtId} />
-        </Modal>
-      )}
+      <div className="max-w-ful">
+        {isModalOpen && (
+          <Modal onClose={() => setIsModalOpen(false)}>
+            <CreateDebtForm onCreateDebt={createDebt} />
+          </Modal>
+        )}
+        {isEditModalOpen && (
+          <Modal onClose={() => setIsEditModalOpen(false)}>
+            <EditDebtForm updateDebt={newDebt} onEditDebt={editDebt} />
+          </Modal>
+        )}
 
-      <div className="mt-6 flex flex-col max-w-full">
-        <button
-          className="p-2 bg-green-500 hover:bg-green-600 rounded text-white mt-6 w-[100px] place-self-end"
-          onClick={() => setIsModalOpen(true)}
-        >
-          Add Debt
-        </button>
-        <table>
-          <thead>
-            <tr>
-              <th className="px-4 py-2 ">Nosaukums</th>
-              <th className="px-4 py-2">Ietaupītais apjoms</th>
-              <th className="px-4 py-2">Kopējais apjoms</th>
-              <th className="px-4 py-2">Procentu likme</th>
-              <th className="px-4 py-2">Sākuma datums</th>
-              <th className="px-4 py-2">Beigu datums</th>
-              <th className="px-4 py-2">Darbības</th>
-            </tr>
-          </thead>
-          <tbody>
-            {formatedDebts.map((debt) => (
-              <tr key={debt.debtId} className="hover:bg-slate-800">
-                <td className="px-4 py-2">{debt.name}</td>
-                <td className="px-4 py-2">{debt.amount.toFixed(2)}</td>
-                <td className="px-4 py-2">{debt.saved.toFixed(2)}</td>
-                <td className="px-4 py-2">{debt.interest_rate}%</td>
-                <td className="px-4 py-2">{debt.startDate.toString()}</td>
-                <td className="px-4 py-2">{debt.endDate.toString()}</td>
-                <td className="px-4 py-2">
-                  <button
-                    onClick={() => handleEdit(debt.debtId)}
-                    className="bg-orange-300 hover:bg-orange-400 rounded text-white p-2 w-[70px]"
+        {confirmDelete && (
+          <DeleteModal
+            id={deleteId}
+            confirmDelete={deleteDebt}
+            onClose={() => setConfirmDelete(false)}
+          />
+        )}
+
+        {debts.length ? (
+          <Frame title="Parādu progress">
+            {debtPrecentage.map((debt, index) => (
+              <div className="w-full" key={index}>
+                <div className="mt-2">{debt.name}</div>
+                <div className="bg-gray-400 rounded-full dark:bg-gray-600 mt-1">
+                  <div
+                    className="bg-blue-500 text-center rounded-full"
+                    style={{ width: `${debt.precentage}%` }}
                   >
-                    Rediģēt
-                  </button>
-                </td>
-                <td>
-                  <button
-                    onClick={() => deleteDebt(debt.debtId)}
-                    className="bg-red-500 hover:bg-red-600 rounded text-white p-2 w-[70px]"
-                  >
-                    Dzēst
-                  </button>
-                </td>
-              </tr>
+                    <div>{debt.precentage}%</div>
+                  </div>
+                </div>
+              </div>
             ))}
-          </tbody>
-        </table>
+          </Frame>
+        ) : (
+          ''
+        )}
+
+        <div className="mt-6 flex flex-col max-w-full">
+          <h1 className="text-4xl">Parādi</h1>
+          <button
+            className="p-2 bg-green-500 hover:bg-green-600 rounded text-white mt-6 w-[100px] place-self-end"
+            onClick={() => setIsModalOpen(true)}
+          >
+            Pievienot
+          </button>
+          <table>
+            <thead className="border-b border-gray-400">
+              <tr>
+                <th className="px-4 py-2 ">Nosaukums</th>
+                <th className="px-4 py-2">Ietaupītais apjoms</th>
+                <th className="px-4 py-2">Kopējais apjoms</th>
+                <th className="px-4 py-2">Procentu likme</th>
+                <th className="px-4 py-2">Sākuma datums</th>
+                <th className="px-4 py-2">Beigu datums</th>
+                <th className="px-4 py-2">Darbības</th>
+              </tr>
+            </thead>
+            <tbody>
+              {formatedDebts.map((debt) => (
+                <tr key={debt.debtId} className="hover:bg-slate-800">
+                  <td className="px-4 py-2">{debt.name}</td>
+                  <td className="px-4 py-2">{debt.amount}€</td>
+                  <td className="px-4 py-2">{debt.saved}€</td>
+                  <td className="px-4 py-2">{debt.interest_rate}%</td>
+                  <td className="px-4 py-2">{debt.startDate.toString()}</td>
+                  <td className="px-4 py-2">{debt.endDate.toString()}</td>
+                  <td className="px-4 py-2">
+                    <button
+                      onClick={() => callEditModal(debt.debtId)}
+                      className="bg-orange-300 hover:bg-orange-400 rounded text-white p-2 w-[75px]"
+                    >
+                      Rediģēt
+                    </button>
+                  </td>
+                  <td>
+                    <button
+                      onClick={() => handleDelete(debt.debtId)}
+                      className="bg-red-500 hover:bg-red-600 rounded text-white p-2 w-[70px]"
+                    >
+                      Dzēst
+                    </button>
+                  </td>
+                  <td>
+                    <Link
+                      className="px-4"
+                      href={{
+                        pathname: `/debt/${debt.debtId}/transaction`,
+                        query: { debt: JSON.stringify(debt) },
+                      }}
+                    >
+                      <button className="bg-orange-300 hover:bg-orange-400 rounded text-white p-2 w-[85px]">
+                        Apmeklēt
+                      </button>
+                    </Link>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   ) : (
-    <div className="flex flex-col items-center justify-between">
-      <h1 className="mt-6">You must be logged in!</h1>
-      <LoginLink className="mt-4">Login</LoginLink>
+    <div className="h-screen flex items-center justify-center">
+      <div className="flex flex-col items-center ">
+        <h1>Jums nepieciešams pieslēgties, lai piekļūtu šai lapai!</h1>
+        <LoginLink className="mt-4">Pieslēgties</LoginLink>
+      </div>
     </div>
   );
 };

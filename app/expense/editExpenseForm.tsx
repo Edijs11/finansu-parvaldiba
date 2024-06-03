@@ -9,8 +9,7 @@ import { useEffect, useState } from 'react';
 import axios from 'axios';
 
 type TCreateExpenseShema = z.infer<typeof expenseShema>;
-const EditExpenseForm = ({ id }: { id: number }) => {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+const EditExpenseForm = ({ updateExpense, onEditExpense }: any) => {
   const {
     register,
     handleSubmit,
@@ -20,22 +19,12 @@ const EditExpenseForm = ({ id }: { id: number }) => {
     resolver: zodResolver(expenseShema),
   });
 
-  const getCurrentExpense = async () => {
-    try {
-      const current = await axios.get(`${apiUrl}/api/expense/${id}`);
-      return current.data;
-    } catch {
-      new Error('could not get the current expense');
-      return null;
-    }
-  };
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await getCurrentExpense();
-        reset(data);
+        reset(updateExpense);
       } catch {
-        new Error('cant get data');
+        new Error('could not get the expense');
       }
     };
     fetchData();
@@ -44,10 +33,9 @@ const EditExpenseForm = ({ id }: { id: number }) => {
   const onSubmit: SubmitHandler<TCreateExpenseShema> = async (data) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      const resp = await axios.put(`${apiUrl}/api/expense/${id}`, data);
-      reset();
+      onEditExpense(data.expenseId, data);
     } catch {
-      new Error('could not submit');
+      new Error('could not submit expense');
     }
   };
 
@@ -66,11 +54,12 @@ const EditExpenseForm = ({ id }: { id: number }) => {
       )}
 
       <p>Apraksts:</p>
-      <input
+      <textarea
         {...register('description')}
-        type="text"
         placeholder="Apraksts"
         className="text-black rounded-sm"
+        rows={2}
+        wrap="hard"
       />
       {errors.description && (
         <p className="text-red-500">{`${errors.description.message}`}</p>

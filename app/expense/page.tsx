@@ -21,6 +21,7 @@ import {
 import CreateExpenseForm from './createExpenseForm';
 import DeleteModal from '../components/deleteModal';
 import EditExpenseForm from './editExpenseForm';
+import { formatDate } from '../components/functions';
 
 interface Expense {
   expenseId: number;
@@ -30,6 +31,15 @@ interface Expense {
   date: Date;
   type: expenseType;
   userId: number;
+}
+
+export interface CreateExpense {
+  name: string;
+  description?: string;
+  amount: number;
+  date: Date;
+  type: expenseType;
+  userId?: number;
 }
 
 const Expense = () => {
@@ -42,7 +52,7 @@ const Expense = () => {
     description: '',
     amount: 0,
     date: new Date(),
-    type: 'FOOD_GROCERIES',
+    type: 'PARTIKA',
     userId: 1,
   });
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -54,27 +64,37 @@ const Expense = () => {
   //   id: '',
   //   name: '',
   // });
+  const currMonth = () => {
+    let now = new Date();
+    now.setDate(1);
+    const currentMonthFirstDate = now.toISOString().split('T')[0];
+    return currentMonthFirstDate;
+  };
+  const [startDate, setStartDate] = useState(currMonth);
+  const getLastDayOfMonth = () => {
+    const now = new Date();
+    let configureMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    configureMonth.setDate(configureMonth.getDate());
+    let lastDayOfM = configureMonth.toISOString().split('T')[0];
+    return lastDayOfM;
+  };
+  const [endDate, setEndDate] = useState(getLastDayOfMonth);
 
   const expenseTypeColors: { [key in expenseType]: string } = {
-    [expenseType.FOOD_GROCERIES]: '#FFFF00',
-    [expenseType.TRANSPORT]: '#FF5735',
-    [expenseType.UTILITIES]: '#1E7000',
-    [expenseType.HEALTHCARE]: '#96FF33',
-    [expenseType.REPAIR]: '#8884d9',
-    [expenseType.INSURANCE]: '#8A5A31',
-    [expenseType.HOUSING]: '#008DA9',
-    [expenseType.ENTERTAINMENT]: '#FFA500',
-    [expenseType.OTHER]: '#D3D3D3',
+    [expenseType.PARTIKA]: '#FFFF00',
+    [expenseType.TRANSPORTS]: '#FF5735',
+    [expenseType.MAJOKLIS]: '#1E7000',
+    [expenseType.REMONTS]: '#96FF33',
+    [expenseType.IZKLAIDE]: '#8884d9',
+    [expenseType.VESELIBA]: '#8A5A31',
+    [expenseType.PRECES_IEGADE]: '#008DA9',
+    [expenseType.APDROSINASANA]: '#FFA500',
+    [expenseType.CITS]: '#D3D3D3',
   };
 
   expenses.sort(
     (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
   );
-
-  const handleEdit = (id: number) => {
-    setIsEditModalOpen(true);
-    setExpenseId(id);
-  };
 
   useEffect(() => {
     const fetchExpense = async () => {
@@ -98,24 +118,34 @@ const Expense = () => {
     width = 500;
   }
 
-  const formatDate = (dateString: Date) => {
-    const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}.${month}.${year}.`;
-  };
-
   const formatedExpenses = useMemo(() => {
-    return expenses.map((expense) => ({
-      ...expense,
-      date: formatDate(expense.date),
-    }));
-  }, [expenses]);
+    if (startDate === '' && endDate === '') {
+      return expenses.map((expense) => ({
+        ...expense,
+        date: formatDate(expense.date),
+      }));
+    }
+    return expenses
+      .filter((expense) => {
+        return (
+          new Date(expense.date).getTime() >= new Date(startDate).getTime() &&
+          new Date(expense.date).getTime() <= new Date(endDate).getTime()
+        );
+      })
+      .map((expense) => ({
+        ...expense,
+        date: formatDate(expense.date),
+      }));
+  }, [expenses, startDate, endDate]);
+
+  const removeDateFilter = () => {
+    setStartDate('');
+    setEndDate('');
+  };
 
   const expenseTypeAndCount: { type: expenseType; amount: number }[] = [];
 
-  expenses.forEach((expense) => {
+  formatedExpenses.forEach((expense) => {
     const existingType = expenseTypeAndCount.findIndex(
       (item) => item.type === expense.type
     );
@@ -126,7 +156,7 @@ const Expense = () => {
     }
   });
 
-  const createExpense = async (expense: Expense) => {
+  const createExpense = async (expense: CreateExpense) => {
     try {
       const response = await axios.post(`${apiUrl}/api/expense`, expense);
       setExpenses([response.data, ...expenses]);
@@ -136,11 +166,29 @@ const Expense = () => {
         description: '',
         amount: 0,
         date: new Date(),
-        type: 'FOOD_GROCERIES',
+        type: 'PARTIKA',
         userId: 1,
       });
     } catch (error) {
       console.error('Error creating expense:', error);
+    }
+  };
+
+  const callEditModal = async (id: number) => {
+    const current = await axios.get(`${apiUrl}/api/expense/${id}`);
+    const formated = new Date(current.data.date).toISOString().split('T')[0];
+    setNewExpense({ ...current.data, date: formated });
+    setIsEditModalOpen(true);
+    return current.data;
+  };
+
+  const editExpense = async (id: number, newExpense: Expense) => {
+    try {
+      await axios.put(`${apiUrl}/api/expense/${id}`, newExpense);
+      setNewExpense(newExpense);
+      setIsEditModalOpen(false);
+    } catch (error) {
+      console.error('Error editing expense:', error);
     }
   };
 
@@ -158,25 +206,27 @@ const Expense = () => {
     setDeleteId(id);
     setConfirmDelete(true);
   };
-  //varbut var more efficient
+
   const getCurrentMonth = new Date().getMonth() + 1;
   const expensesCurrentMonth = expenses.filter((expense) => {
     const expenseDate = new Date(expense.date);
     const expenseMonth = expenseDate.getMonth() + 1;
     return expenseMonth === getCurrentMonth;
   });
+
   const getLastMonth = getCurrentMonth === 1 ? 12 : getCurrentMonth - 1;
   const expensesLastMonth = expenses.filter((expense) => {
     const expenseDate = new Date(expense.date);
     const expenseMonth = expenseDate.getMonth() + 1;
     return expenseMonth === getLastMonth;
   });
+
   const calcTotalExpense = (expenses: Expense[]): number => {
     return expenses.reduce((total, expense) => {
       return total + expense.amount;
     }, 0);
   };
-  //vajag ar monthly avg ar last month
+
   let precentageChangeFromLastMonth =
     ((calcTotalExpense(expensesCurrentMonth) -
       calcTotalExpense(expensesLastMonth)) /
@@ -194,7 +244,7 @@ const Expense = () => {
             <p>{payload[0].payload.name}</p>
             <p>{`${payload[0].payload.type}: ${payload[0].value.toFixed(
               2
-            )}`}</p>
+            )}€`}</p>
           </div>
         );
       }
@@ -209,14 +259,6 @@ const Expense = () => {
     );
   return isAuthenticated ? (
     <div className="flex flex-col items-center justify-between">
-      {confirmDelete && (
-        <DeleteModal
-          id={deleteId}
-          confirmDelete={deleteExpense}
-          onClose={() => setConfirmDelete(false)}
-        />
-      )}
-
       {isCreateModalOpen && (
         <Modal onClose={() => setIsCreateModalOpen(false)}>
           <CreateExpenseForm onCreateExpense={createExpense} />
@@ -225,52 +267,67 @@ const Expense = () => {
 
       {isEditModalOpen && (
         <Modal onClose={() => setIsEditModalOpen(false)}>
-          <EditExpenseForm id={expenseId} />
+          <EditExpenseForm
+            updateExpense={newExpense}
+            onEditExpense={editExpense}
+          />
         </Modal>
+      )}
+
+      {confirmDelete && (
+        <DeleteModal
+          id={deleteId}
+          confirmDelete={deleteExpense}
+          onClose={() => setConfirmDelete(false)}
+        />
       )}
 
       {expenses.length ? (
         <div className="mt-6  max-w-full">
-          <Frame title="Monthly expenses">
+          <Frame title="Mēneša izmaksas">
             <div className="mt-2 text-2xl">
-              Current: {calcTotalExpense(expensesCurrentMonth)}
+              Šis mēnesis: {calcTotalExpense(expensesCurrentMonth).toFixed(2)}€
             </div>
 
             <div className="mt-2 text-lg">
               {calcTotalExpense(expensesLastMonth) === 0 ? (
                 ''
               ) : (
-                <div>Last: {calcTotalExpense(expensesLastMonth)}</div>
+                <div>
+                  <div>
+                    Pagājušais: {calcTotalExpense(expensesLastMonth).toFixed(2)}
+                    €
+                  </div>
+                  <div className="flex">
+                    <p className="mr-2">Atšķirība:</p>
+                    <p
+                      className={`text-sm mt-1 ${
+                        precentageChangeFromLastMonth > 0
+                          ? 'text-green-500'
+                          : 'text-red-500'
+                      }`}
+                    >
+                      {precentageChangeFromLastMonth.toFixed(2)}%
+                    </p>
+                  </div>
+                </div>
               )}
             </div>
-            <p
-              className={`text-sm ${
-                precentageChangeFromLastMonth > 0
-                  ? 'text-green-500'
-                  : 'text-red-500'
-              }`}
-            >
-              {precentageChangeFromLastMonth.toFixed(2)}%
-            </p>
           </Frame>
         </div>
       ) : (
         ''
       )}
 
-      {expenses.length ? (
+      {formatedExpenses.length ? (
         <div className="mt-6 max-w-full">
           <Frame title="Izdevumi">
-            <BarChart width={width} height={height} data={[]}>
+            <BarChart width={width} height={height} data={formatedExpenses}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
               <YAxis />
               <Tooltip content={<CustomTooltip />} />
-              <Bar
-                dataKey="amount"
-                data={formatedExpenses}
-                onMouseOver={() => (tooltip = 'amount')}
-              >
+              <Bar dataKey="amount" onMouseOver={() => (tooltip = 'amount')}>
                 {formatedExpenses.map((expense, index) => (
                   <Cell key={index} fill={expenseTypeColors[expense.type]} />
                 ))}
@@ -309,12 +366,41 @@ const Expense = () => {
       )}
 
       <div className="mt-6 flex flex-col  max-w-full">
+        <h1 className="text-4xl">Izdevumi</h1>
         <button
           className="p-2 bg-green-500 hover:bg-green-600 rounded text-white mt-6 w-[120px] place-self-end"
           onClick={() => setIsCreateModalOpen(true)}
         >
           Pievienot
         </button>
+        <div className="flex justify-between place-self-end mt-2">
+          <div className="mt-2">
+            Diapazons:
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="mx-2 text-black rounded-sm"
+            />
+            -
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="mx-2 text-black rounded-sm"
+            />
+            {startDate !== '' ? (
+              <button
+                onClick={removeDateFilter}
+                className="ml-2 text-xl border w-[40px] rounded"
+              >
+                x
+              </button>
+            ) : (
+              ''
+            )}
+          </div>
+        </div>
         <table>
           <thead className="border-b border-gray-400">
             <tr>
@@ -331,21 +417,21 @@ const Expense = () => {
               <tr key={expense.expenseId} className="hover:bg-slate-800">
                 <td>{expense.name}</td>
                 <td className="w-60 overflow-hidden overflow-ellipsis break-all">
-                  {/*  hover:break-all -jafixo */}
                   {expense.description}
                 </td>
 
-                <td className="px-4 py-2">{expense.amount.toFixed(2)}</td>
+                <td className="px-4 py-2">{expense.amount.toFixed(2)}€</td>
                 <td className="px-4 py-2">{expense.type}</td>
                 <td className="px-4 py-2">{expense.date.toString()}</td>
                 <td className="px-2 py-2">
                   <button
-                    className="bg-orange-300 hover:bg-orange-400 rounded text-white p-2 w-[70px]"
-                    onClick={() => handleEdit(expense.expenseId)}
+                    className="bg-orange-300 hover:bg-orange-400 rounded text-white p-2 w-[75px]"
+                    onClick={() => callEditModal(expense.expenseId)}
                   >
                     Rediģēt
                   </button>
-
+                </td>
+                <td className="px-2 py-2">
                   <button
                     onClick={() => handleDelete(expense.expenseId)}
                     className="bg-red-500 hover:bg-red-600 rounded text-white p-2 w-[70px]"
@@ -360,9 +446,11 @@ const Expense = () => {
       </div>
     </div>
   ) : (
-    <div className="flex flex-col items-center justify-between">
-      <h1 className="mt-6">You must be logged in!</h1>
-      <LoginLink className="mt-4">Login</LoginLink>
+    <div className="h-screen flex items-center justify-center">
+      <div className="flex flex-col items-center ">
+        <h1>Jums nepieciešams pieslēgties, lai piekļūtu šai lapai!</h1>
+        <LoginLink className="mt-4">Pieslēgties</LoginLink>
+      </div>
     </div>
   );
 };

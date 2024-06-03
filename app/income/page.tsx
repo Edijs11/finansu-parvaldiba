@@ -10,7 +10,6 @@ import {
   Legend,
   Pie,
   PieChart,
-  ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
@@ -22,6 +21,7 @@ import DeleteModal from '../components/deleteModal';
 import { LoginLink, useKindeBrowserClient } from '@kinde-oss/kinde-auth-nextjs';
 import CreateIncomeForm from './createIncomeForm';
 import EditIncomeForm from './editIncomeForm';
+import { formatDate } from '../components/functions';
 
 export interface Income {
   incomeId: number;
@@ -32,12 +32,13 @@ export interface Income {
   type: incomeType;
 }
 
-// export interface IncomeProps {
-//   name: string;
-//   amount: number;
-//   date: Date;
-//   type: incomeType;
-// }
+export interface CreateIncome {
+  name: string;
+  amount: number;
+  date: Date;
+  type: incomeType;
+  userId?: number;
+}
 
 const Income = () => {
   const { isAuthenticated, isLoading } = useKindeBrowserClient();
@@ -48,7 +49,7 @@ const Income = () => {
     name: '',
     amount: 0,
     date: new Date(),
-    type: 'SALARY',
+    type: 'ALGA',
     userId: 1,
   });
   const [updateIncome, setUpdateIncome] = useState<Income>({
@@ -56,43 +57,47 @@ const Income = () => {
     name: '',
     amount: 0,
     date: new Date(),
-    type: 'SALARY',
+    type: 'ALGA',
     userId: 1,
   });
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
-  const [incomeId, setIncomeId] = useState(0);
   const [delId, setDelId] = useState<number>(0);
-  const [startDate, setStartDate] = useState<Date | null>(null);
-  const [endDate, setEndDate] = useState<Date | null>(null);
+  const getCurrentMonth = () => {
+    let now = new Date();
+    now.setDate(1);
+    const currentMonthFirstDate = now.toISOString().split('T')[0];
+    return currentMonthFirstDate;
+  };
+  const [startDate, setStartDate] = useState(getCurrentMonth);
+  const getLastDayOfMonth = () => {
+    const now = new Date();
+    let configureMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+    configureMonth.setDate(configureMonth.getDate());
+    let lastDayOfM = configureMonth.toISOString().split('T')[0];
+    return lastDayOfM;
+  };
+  const [endDate, setEndDate] = useState(getLastDayOfMonth);
 
   const incomeTypeColors: { [key in incomeType]: string } = {
-    [incomeType.SALARY]: '#96FF33',
-    [incomeType.DIVIDENDS]: '#FF5735',
-    [incomeType.GOVERMENT_ASSISTANCE]: '#1E7000',
-    [incomeType.GIFT]: '#96FF33',
-    [incomeType.REALASTATE]: '#8884d9',
-    [incomeType.PROFIT_INCOME]: '#8A5A31',
-    [incomeType.INTEREST_INCOME]: '#008DA9',
-    [incomeType.ROYALTY_INCOME]: '#FFA500',
-    [incomeType.OTHER]: '#D3D3D3',
+    [incomeType.ALGA]: '#96FF33',
+    [incomeType.DIVIDENDES]: '#FFFF00',
+    [incomeType.DAVANA]: '#FF5735',
+    [incomeType.VALSTS_PABALSTS]: '#008DA9',
+    [incomeType.NEKUSTAMAIS_IPASUMS]: '#FFA500',
+    [incomeType.PELNA]: '#1E7000',
+    [incomeType.HONORARS]: '#8884d9',
+    [incomeType.CITS]: '#D3D3D3',
   };
+
   incomes.sort(
     (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
   );
-
-  // const today = new Date();
-  // const from = new Date();
-  // from.setDate(today.getDate() - 30);
-
-  const handleEdit = (id: number) => {
-    setIsEditModalOpen(true);
-    setIncomeId(id);
-  };
+  // console.log(incomes);
 
   useEffect(() => {
-    const fetchIncome = async () => {
+    const fetchIncomes = async () => {
       try {
         const response = await axios.get(`${apiUrl}/api/income`);
         setIncomes(response.data);
@@ -100,44 +105,38 @@ const Income = () => {
         console.error('error fetching data:', error);
       }
     };
-    fetchIncome();
+    fetchIncomes();
   }, [newIncome]);
 
-  const formatDate = (dateString: Date) => {
-    const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}.${month}.${year}.`;
-  };
-
   const formatedIncomes = useMemo(() => {
-    return incomes.map((income) => ({
-      ...income,
-      date: formatDate(income.date),
-    }));
-  }, [incomes]);
-
-  const filterIncome = () => {
-    if (startDate && endDate) {
-      const filteredIncomes = incomes.filter(
-        (income) =>
+    if (startDate === '' && endDate === '') {
+      return incomes.map((income) => ({
+        ...income,
+        date: formatDate(income.date),
+      }));
+    }
+    return incomes
+      .filter((income) => {
+        return (
           new Date(income.date).getTime() >= new Date(startDate).getTime() &&
           new Date(income.date).getTime() <= new Date(endDate).getTime()
-      );
-      console.log(filteredIncomes);
-      setIncomes(filteredIncomes);
-    }
-  };
+        );
+      })
+      .map((income) => ({
+        ...income,
+        date: formatDate(income.date),
+      }));
+  }, [incomes, startDate, endDate]);
 
-  // const handleResetDateFilter = () => {
-  //   setStartDate('');
-  //   setEndDate('');
-  // };
+  const removeDateFilter = () => {
+    const currentYear = new Date().getFullYear();
+    setStartDate(new Date(currentYear, 0, 1 + 1).toISOString().split('T')[0]);
+    setEndDate(new Date(currentYear, 11, 31 + 1).toISOString().split('T')[0]);
+  };
 
   const incomeTypeAndCount: { type: incomeType; amount: number }[] = [];
 
-  incomes.forEach((income) => {
+  formatedIncomes.forEach((income) => {
     const existingType = incomeTypeAndCount.findIndex(
       (item) => item.type === income.type
     );
@@ -148,11 +147,7 @@ const Income = () => {
     }
   });
 
-  // const addIncome = (newIncome: Income) => {
-  //   setIncomes([...incomes, newIncome]);
-  // };
-
-  const createIncome = async (income: Income) => {
+  const createIncome = async (income: CreateIncome) => {
     try {
       const response = await axios.post(`${apiUrl}/api/income`, income);
       setIncomes([response.data, ...incomes]);
@@ -161,7 +156,7 @@ const Income = () => {
         name: '',
         amount: 0,
         date: new Date(),
-        type: incomeType.SALARY,
+        type: 'ALGA',
         userId: 1,
       });
     } catch (error) {
@@ -169,24 +164,30 @@ const Income = () => {
     }
   };
 
-  const editIncome = async (id: number) => {
-    try {
-      const response = await axios.put(
-        `${apiUrl}/api/income/${id}`,
-        updateIncome
-      );
-      setIncomes(response.data);
-      setUpdateIncome(response.data);
-      // const updateSpecific = incomes.map(
-      //   (income) => (income.incomeId = id ? response.data : income)
-      // );
-      console.log(response.data);
-      // return response.data;
+  const callEditModal = async (id: number) => {
+    const current = await axios.get(`${apiUrl}/api/income/${id}`);
+    const formatedDate = new Date(current.data.date)
+      .toISOString()
+      .split('T')[0];
+    setUpdateIncome({ ...current.data, date: formatedDate });
+    setIsEditModalOpen(true);
+    return current.data;
+  };
 
-      // setIncomes([response.data, ...incomes]);
-      // updateIncome({ name: '', amount: 0, date: '', type: incomeType.SALARY });
+  const editIncome = async (id: number, updateIncome: Income) => {
+    try {
+      await axios.put(`${apiUrl}/api/income/${id}`, updateIncome);
+      setNewIncome({
+        incomeId: 1,
+        name: '',
+        amount: 0,
+        date: new Date(),
+        type: 'ALGA',
+        userId: 1,
+      });
+      setIsEditModalOpen(false);
     } catch (error) {
-      console.error('Error creating income:', error);
+      console.error('Error editing income:', error);
     }
   };
 
@@ -216,7 +217,7 @@ const Income = () => {
             <p>{payload[0].payload.name}</p>
             <p>{`${payload[0].payload.type}: ${payload[0].value.toFixed(
               2
-            )}`}</p>
+            )}€`}</p>
           </div>
         );
       }
@@ -241,15 +242,17 @@ const Income = () => {
     );
   return isAuthenticated ? (
     <div className="flex flex-col items-center justify-between">
-      {isEditModalOpen && (
-        <Modal onClose={() => setIsEditModalOpen(false)}>
-          <EditIncomeForm id={incomeId} />
-        </Modal>
-      )}
       {isCreateModalOpen && (
         <Modal onClose={() => setIsCreateModalOpen(false)}>
           <CreateIncomeForm onCreateIncome={createIncome} />
-          {/* onCreateIncome={createIncome} */}
+        </Modal>
+      )}
+      {isEditModalOpen && (
+        <Modal onClose={() => setIsEditModalOpen(false)}>
+          <EditIncomeForm
+            updateIncome={updateIncome}
+            onEditIncome={editIncome}
+          />
         </Modal>
       )}
 
@@ -260,19 +263,15 @@ const Income = () => {
           onClose={() => setConfirmDelete(false)}
         />
       )}
-      {incomes.length ? (
+      {formatedIncomes.length ? (
         <div className="mt-6 px-2 max-w-full">
           <Frame title="Ienākumi">
-            <BarChart width={width} height={height} data={[]}>
+            <BarChart width={width} height={height} data={formatedIncomes}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
               <YAxis />
               <Tooltip content={<CustomTooltip />} />
-              <Bar
-                dataKey="amount"
-                data={formatedIncomes}
-                onMouseOver={() => (tooltip = 'amount')}
-              >
+              <Bar dataKey="amount" onMouseOver={() => (tooltip = 'amount')}>
                 {formatedIncomes.map((income, index) => (
                   <Cell key={index} fill={incomeTypeColors[income.type]} />
                 ))}
@@ -310,42 +309,41 @@ const Income = () => {
         ''
       )}
       <div className="mt-6 flex flex-col max-w-full">
+        <h1 className="text-4xl">Ienākumi</h1>
         <button
           className="p-2 bg-green-500 hover:bg-green-600 rounded text-white w-[120px] place-self-end"
           onClick={() => setIsCreateModalOpen(true)}
         >
           Pievienot
         </button>
-        {/* <div className="flex justify-between place-self-end mt-2">
+        <div className="flex justify-between place-self-end mt-2">
           <div className="mt-2">
-            From:
+            Diapazons:
             <input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
               className="mx-2 text-black rounded-sm"
             />
-            To:
+            -
             <input
               type="date"
               value={endDate}
               onChange={(e) => setEndDate(e.target.value)}
               className="mx-2 text-black rounded-sm"
             />
-            <button
-              onClick={filterIncome}
-              className="bg-orange-300 hover:bg-orange-400 rounded text-white p-2 w-[70px]"
-            >
-              Filter
-            </button>
-            <button
-              onClick={handleResetDateFilter}
-              className="bg-orange-300 hover:bg-orange-400 rounded text-white p-2 w-[100px]"
-            >
-              Reset filter
-            </button>
+            {startDate !== '' ? (
+              <button
+                onClick={removeDateFilter}
+                className="ml-2 text-xl border w-[80px] rounded"
+              >
+                x
+              </button>
+            ) : (
+              ''
+            )}
           </div>
-        </div> */}
+        </div>
 
         <table className="mt-2">
           <thead className="border-b border-gray-400">
@@ -354,19 +352,21 @@ const Income = () => {
               <th className="px-4 py-2">Apjoms</th>
               <th className="px-4 py-2">Tips</th>
               <th className="px-4 py-2">Datums</th>
+              <th className="px-4 py-2">Darbības</th>
             </tr>
           </thead>
           <tbody>
             {formatedIncomes.toReversed().map((income) => (
               <tr key={income.incomeId} className="hover:bg-slate-800">
+                {/* border-r */}
                 <td className="px-4 py-2">{income.name}</td>
-                <td className="px-4 py-2">{income.amount}</td>
+                <td className="px-4 py-2">{income.amount.toFixed(2)}€</td>
                 <td className="px-4 py-2">{income.type}</td>
                 <td className="px-4 py-2">{income.date}</td>
                 <td className="px-4 py-2">
                   <button
-                    onClick={() => handleEdit(income.incomeId)}
-                    className="bg-orange-300 hover:bg-orange-400 rounded text-white p-2 w-[70px]"
+                    onClick={() => callEditModal(income.incomeId)}
+                    className="bg-orange-300 hover:bg-orange-400 rounded text-white p-2 w-[75px]"
                   >
                     Rediģēt
                   </button>
@@ -387,9 +387,11 @@ const Income = () => {
       <div></div>
     </div>
   ) : (
-    <div className="flex flex-col items-center justify-between">
-      <h1 className="mt-6">You must be logged in!</h1>
-      <LoginLink className="mt-4">Login</LoginLink>
+    <div className="h-screen flex items-center justify-center">
+      <div className="flex flex-col items-center ">
+        <h1>Jums nepieciešams pieslēgties, lai piekļūtu šai lapai!</h1>
+        <LoginLink className="mt-4">Pieslēgties</LoginLink>
+      </div>
     </div>
   );
 };

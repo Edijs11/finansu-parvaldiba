@@ -4,10 +4,16 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { savingGoalShema } from '../lib/shemas';
+import { CreateSavingGoal } from './page';
 
+interface CreateSavingGoalProps {
+  onCreateSavingGoal: (savingGoal: CreateSavingGoal) => Promise<void>;
+}
 type TCreateSavingGoalShema = z.infer<typeof savingGoalShema>;
 
-const CreateSavingGoalForm = ({ onCreateSavingGoal }: any) => {
+const CreateSavingGoalForm = ({
+  onCreateSavingGoal,
+}: CreateSavingGoalProps) => {
   const {
     register,
     handleSubmit,
@@ -23,7 +29,7 @@ const CreateSavingGoalForm = ({ onCreateSavingGoal }: any) => {
       onCreateSavingGoal(data);
       reset();
     } catch {
-      new Error('this is bad');
+      new Error('Failed to submit');
     }
   };
 
@@ -36,7 +42,6 @@ const CreateSavingGoalForm = ({ onCreateSavingGoal }: any) => {
         type="text"
         placeholder="Nosaukums"
         className="text-black rounded-sm"
-        required
       />
       {errors.name && (
         <p className="text-red-500">{`${errors.name.message}`}</p>
@@ -44,14 +49,14 @@ const CreateSavingGoalForm = ({ onCreateSavingGoal }: any) => {
 
       <p className="mt-2">Mērķa apjoms:</p>
       <input
-        {...register('saved', { valueAsNumber: true })}
+        {...register('amount', { valueAsNumber: true })}
         type="number"
         step="0.01"
         placeholder="0.00"
         className="text-black rounded-sm"
       />
-      {errors.saved && (
-        <p className="text-red-500">{`${errors.saved.message}`}</p>
+      {errors.amount && (
+        <p className="text-red-500">{`${errors.amount.message}`}</p>
       )}
 
       <p className="mt-2">Sākuma datums:</p>

@@ -12,8 +12,8 @@ export async function GET(
     const id = Number(params.id);
     const transactions = await prisma.transaction.findMany({
       where: {
-        savingId: id,
-        type: TransactionType.GOAL,
+        debtId: id,
+        type: TransactionType.DEBT,
       },
     });
 
@@ -44,22 +44,22 @@ export async function POST(
     const input = transactionShema.parse(body);
     const transaction = await prisma.transaction.create({
       data: {
-        savingId: id,
+        debtId: id,
         amount: input.amount,
         date: input.transactionDate,
-        type: TransactionType.GOAL,
+        type: TransactionType.DEBT,
       },
     });
 
-    const savingGoal = await prisma.savingGoal.findUnique({
+    const debt = await prisma.debt.findUnique({
       where: {
-        savingId: id,
+        debtId: id,
       },
     });
 
-    await prisma.savingGoal.update({
+    await prisma.debt.update({
       where: {
-        savingId: savingGoal.savingId,
+        debtId: debt.debtId,
       },
       data: {
         saved: { increment: input.amount },
@@ -68,6 +68,7 @@ export async function POST(
 
     return new NextResponse(JSON.stringify(transaction), { status: 201 });
   } catch (error) {
+    console.log('create error:', error);
     return new NextResponse(
       JSON.stringify({ error: 'some error posting transaction' }),
       { status: 500 }

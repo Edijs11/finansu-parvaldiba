@@ -1,17 +1,15 @@
 'use client';
 
-import { User } from '@prisma/client';
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import Modal from '../components/modal';
 import { LoginLink, useKindeBrowserClient } from '@kinde-oss/kinde-auth-nextjs';
 import CreateSavingGoalForm from './createSavingGoalForm';
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
-import { Cell, Legend, Pie, PieChart, Tooltip } from 'recharts';
 import Frame from '../components/frame';
 import EditSavingGoalForm from './editSavingGoalForm';
-// import UserComponent from './components/IncomeComponent';
+import { formatDate, precentageCalculation } from '../components/functions';
+import DeleteModal from '../components/deleteModal';
 
 interface SavingGoal {
   savingId: number;
@@ -23,20 +21,20 @@ interface SavingGoal {
   userId: number;
 }
 
+export interface CreateSavingGoal {
+  name: string;
+  amount: number;
+  saved: number;
+  startDate: Date;
+  endDate: Date;
+  userId?: number;
+}
+
 const SavingGoal = () => {
   const { isAuthenticated, isLoading } = useKindeBrowserClient();
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const [savingGaols, setSavingGoals] = useState<SavingGoal[]>([]);
-  const [newSavingGoal, setNewSavingGoal] = useState<SavingGoal>({
-    savingId: 1,
-    name: '',
-    amount: 0,
-    saved: 0,
-    startDate: new Date(),
-    endDate: new Date(),
-    userId: 1,
-  });
-  const [updateSavingGoal, setUpdateSavingGoal] = useState<SavingGoal>({
+  const [savingGoalAction, setSavingGoalAction] = useState<SavingGoal>({
     savingId: 1,
     name: '',
     amount: 0,
@@ -46,49 +44,21 @@ const SavingGoal = () => {
     userId: 1,
   });
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [savingGoalId, setSavingGoalId] = useState(0);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [deleteId, setDeleteId] = useState<number>(0);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
     const fetchSavingGoals = async () => {
       try {
         const response = await axios.get(`${apiUrl}/api/savinggoal`);
-        setSavingGoals(response.data.reverse());
+        setSavingGoals(response.data);
       } catch (error) {
         console.error('error fetching data:', error);
       }
     };
     fetchSavingGoals();
-  }, [newSavingGoal]);
-
-  // const onTableNavigation = (goal: SavingGoal) => {
-  //   redirect(`/savinggoal/${goal.savingId}/transaction`);
-  // };
-  const handleEdit = (id: number) => {
-    setIsEditModalOpen(true);
-    setSavingGoalId(id);
-  };
-
-  const formatDate = (dateString: Date) => {
-    const date = new Date(dateString);
-    const day = String(date.getDate()).padStart(2, '0');
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const year = date.getFullYear();
-    return `${day}.${month}.${year}.`;
-  };
-
-  // const progressPrecentage: {[key: string]: number} = {}
-  // ((savingGaol.saved - savingGaol.amount) / savingGaol.amount) * 100
-  {
-    /* {savingGaols.map((savingGoal) => (
-          <div>
-            {savingGoal.name}
-            <div className="bg-gray-200 rounded-full dark:bg-slate-500">
-              <div className="bg-blue-400 text-center rounded-full">10</div>
-            </div>
-          </div>
-        ))} */
-  }
+  }, [savingGoalAction]);
 
   const formatedSavingGoals = savingGaols.map((savingGaol) => ({
     ...savingGaol,
@@ -96,11 +66,11 @@ const SavingGoal = () => {
     endDate: formatDate(savingGaol.endDate),
   }));
 
-  const createSavingGoal = async (savingGoal: SavingGoal) => {
+  const createSavingGoal = async (savingGoal: CreateSavingGoal) => {
     try {
       const response = await axios.post(`${apiUrl}/api/savinggoal`, savingGoal);
       setSavingGoals([response.data, ...savingGaols]);
-      setNewSavingGoal({
+      setSavingGoalAction({
         savingId: 1,
         name: '',
         amount: 0,
@@ -114,6 +84,41 @@ const SavingGoal = () => {
     }
   };
 
+  const callEditModal = async (id: number) => {
+    const current = await axios.get(`${apiUrl}/api/savinggoal/${id}`);
+    const formatedStartDate = new Date(current.data.startDate)
+      .toISOString()
+      .split('T')[0];
+    const formatedEndDate = new Date(current.data.endDate)
+      .toISOString()
+      .split('T')[0];
+    setSavingGoalAction({
+      ...current.data,
+      startDate: formatedStartDate,
+      endDate: formatedEndDate,
+    });
+    setIsEditModalOpen(true);
+    return current.data;
+  };
+
+  const editSavingGoal = async (id: number, updateGoal: SavingGoal) => {
+    try {
+      await axios.put(`${apiUrl}/api/savinggoal/${id}`, updateGoal);
+      setSavingGoalAction({
+        savingId: 1,
+        name: '',
+        amount: 0,
+        saved: 0,
+        startDate: new Date(),
+        endDate: new Date(),
+        userId: 1,
+      });
+      setIsEditModalOpen(false);
+    } catch (error) {
+      console.error('Error editing saving goal:', error);
+    }
+  };
+
   const deleteSavingGoal = async (id: number) => {
     try {
       await axios.delete(`${apiUrl}/api/savinggoal/${id}`);
@@ -123,20 +128,19 @@ const SavingGoal = () => {
     } catch (error) {
       console.error('Error deleting saving goal:', error);
     }
+    setConfirmDelete(false);
   };
 
-  const savingGoalPrecentageCalculation = (
-    saved: number,
-    total: number
-  ): number => {
-    return (saved / total) * 100;
+  const handleDelete = (id: number) => {
+    setDeleteId(id);
+    setConfirmDelete(true);
   };
 
   const goalPrecentage = savingGaols.map((savingGoal) => ({
     name: savingGoal.name,
-    precentage: savingGoalPrecentageCalculation(
-      savingGoal.amount,
-      savingGoal.saved
+    precentage: precentageCalculation(
+      savingGoal.saved,
+      savingGoal.amount
     ).toFixed(0),
   }));
 
@@ -156,26 +160,42 @@ const SavingGoal = () => {
         )}
         {isEditModalOpen && (
           <Modal onClose={() => setIsEditModalOpen(false)}>
-            <EditSavingGoalForm id={savingGoalId} />
+            <EditSavingGoalForm
+              savingGoalAction={savingGoalAction}
+              onEditSavingGoal={editSavingGoal}
+            />
           </Modal>
         )}
-        <Frame title="Taupīšanas mērķu progress">
-          {goalPrecentage.map((goal, index) => (
-            <div className="w-full" key={index}>
-              <div className="mt-2">{goal.name}</div>
-              <div className="bg-gray-400 rounded-full dark:bg-gray-600">
-                <div
-                  className="bg-blue-500 text-center rounded-full"
-                  style={{ width: `${goal.precentage}%` }}
-                >
-                  <div>{goal.precentage}%</div>
+
+        {confirmDelete && (
+          <DeleteModal
+            id={deleteId}
+            confirmDelete={deleteSavingGoal}
+            onClose={() => setConfirmDelete(false)}
+          />
+        )}
+
+        {savingGaols.length ? (
+          <Frame title="Taupīšanas mērķu progress">
+            {goalPrecentage.map((goal, index) => (
+              <div className="w-full" key={index}>
+                <div className="mt-2">{goal.name}</div>
+                <div className="bg-gray-400 rounded-full mt-1">
+                  <div
+                    className="bg-blue-500 text-center rounded-full"
+                    style={{ width: `${goal.precentage}%` }}
+                  >
+                    <div>{goal.precentage}%</div>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </Frame>
-
+            ))}
+          </Frame>
+        ) : (
+          ''
+        )}
         <div className="mt-6 flex flex-col max-w-full">
+          <h1 className="text-4xl">Taupīšanas mērķi</h1>
           <button
             className="p-2 bg-green-500 hover:bg-green-600 rounded text-white mt-6 w-[100px] place-self-end"
             onClick={() => setIsModalOpen(true)}
@@ -183,7 +203,7 @@ const SavingGoal = () => {
             Pievienot
           </button>
           <table>
-            <thead>
+            <thead className="border-b border-gray-400">
               <tr>
                 <th className="px-4 py-2 ">Nosaukums</th>
                 <th className="px-4 py-2">Ietaupītais apjoms</th>
@@ -198,8 +218,8 @@ const SavingGoal = () => {
                 <tr key={savingGoal.savingId} className="hover:bg-slate-800">
                   <td className="px-4 py-2">{savingGoal.name}</td>
 
-                  <td className="px-4 py-2">{savingGoal.amount.toFixed(2)}</td>
-                  <td className="px-4 py-2">{savingGoal.saved.toFixed(2)}</td>
+                  <td className="px-4 py-2">{savingGoal.saved}€</td>
+                  <td className="px-4 py-2">{savingGoal.amount}€</td>
                   <td className="px-4 py-2">
                     {savingGoal.startDate.toString()}
                   </td>
@@ -207,7 +227,7 @@ const SavingGoal = () => {
 
                   <td className="px-4 py-2">
                     <button
-                      onClick={() => handleEdit(savingGoal.savingId)}
+                      onClick={() => callEditModal(savingGoal.savingId)}
                       className="bg-orange-300 hover:bg-orange-400 rounded text-white p-2 w-[70px]"
                     >
                       Rediģēt
@@ -215,19 +235,23 @@ const SavingGoal = () => {
                   </td>
                   <td>
                     <button
-                      onClick={() => deleteSavingGoal(savingGoal.savingId)}
-                      className="bg-red-500 hover:bg-red-600 rounded text-white p-2 w-[70px]"
+                      onClick={() => handleDelete(savingGoal.savingId)}
+                      className="bg-red-500 hover:bg-red-600 rounded text-white p-2 w-[75px]"
                     >
                       Dzēst
                     </button>
+                  </td>
+                  <td>
                     <Link
                       className="px-4"
                       href={{
-                        pathname: `/savinggoal/${savingGoal.savingId}/transaction`,
+                        pathname: `/savinggoal/${savingGoal.savingId}/transaction`, //?savingGoal${savingGoal.savingId}
                         query: { savingGoal: JSON.stringify(savingGoal) },
                       }}
                     >
-                      :
+                      <button className="bg-orange-300 hover:bg-orange-400 rounded text-white p-2 w-[85px]">
+                        Apmeklēt
+                      </button>
                     </Link>
                   </td>
                 </tr>
@@ -238,9 +262,11 @@ const SavingGoal = () => {
       </div>
     </main>
   ) : (
-    <div className="flex flex-col items-center justify-between">
-      <h1 className="mt-6">You must be logged in!</h1>
-      <LoginLink className="mt-4">Login</LoginLink>
+    <div className="h-screen flex items-center justify-center">
+      <div className="flex flex-col items-center ">
+        <h1>Jums nepieciešams pieslēgties, lai piekļūtu šai lapai!</h1>
+        <LoginLink className="mt-4">Pieslēgties</LoginLink>
+      </div>
     </div>
   );
 };

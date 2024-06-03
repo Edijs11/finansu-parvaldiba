@@ -5,12 +5,10 @@ import { incomeType } from '@prisma/client';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { debtShema } from '../lib/shemas';
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useEffect } from 'react';
 
 type TCreateDebtShema = z.infer<typeof debtShema>;
-const EditDebtForm = ({ id }: { id: number }) => {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+const EditDebtForm = ({ updateDebt, onEditDebt }: any) => {
   const {
     register,
     handleSubmit,
@@ -20,22 +18,12 @@ const EditDebtForm = ({ id }: { id: number }) => {
     resolver: zodResolver(debtShema),
   });
 
-  const getCurrentDebt = async () => {
-    try {
-      const current = await axios.get(`${apiUrl}/api/debt/${id}`);
-      return current.data;
-    } catch {
-      new Error('could not get the current debt');
-      return null;
-    }
-  };
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const data = await getCurrentDebt();
-        reset(data);
+        reset(updateDebt);
       } catch {
-        new Error('cant get data');
+        new Error('could not get the debt');
       }
     };
     fetchData();
@@ -44,10 +32,9 @@ const EditDebtForm = ({ id }: { id: number }) => {
   const onSubmit: SubmitHandler<TCreateDebtShema> = async (data) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      const resp = await axios.put(`${apiUrl}/api/debt/${id}`, data);
-      reset();
+      onEditDebt(data.debtId, data);
     } catch {
-      new Error('could not submit');
+      new Error('could not submit debt');
     }
   };
 

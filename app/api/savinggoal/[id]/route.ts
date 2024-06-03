@@ -9,31 +9,40 @@ export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const { getUser } = getKindeServerSession();
-  const user = await getUser();
+  try {
+    const { getUser } = getKindeServerSession();
+    const user = await getUser();
 
-  if (!user || user == null || !user.id) {
-    throw new Error('Something went wrong with authentication' + user);
-  }
+    if (!user || user == null || !user.id) {
+      throw new Error('Something went wrong with authentication' + user);
+    }
 
-  let dbUser = await prisma.user.findUnique({
-    where: { kindeId: user.id },
-  });
-  const id = params.id;
-  const savingGoal = await prisma.savingGoal.findUnique({
-    where: {
-      savingId: Number(id),
-      userId: dbUser.id,
-    },
-  });
+    let dbUser = await prisma.user.findUnique({
+      where: { kindeId: user.id },
+    });
+    const id = params.id;
+    const savingGoal = await prisma.savingGoal.findUnique({
+      where: {
+        savingId: Number(id),
+        userId: dbUser.id,
+      },
+    });
 
-  if (!savingGoal) {
-    return NextResponse.json(
-      { error: 'savingGoal not found' },
-      { status: 404 }
+    if (!savingGoal) {
+      return NextResponse.json(
+        { error: 'savingGoal not found' },
+        { status: 404 }
+      );
+    }
+    return NextResponse.json(savingGoal);
+  } catch (error) {
+    return new NextResponse(
+      JSON.stringify({ error: 'error getting saving goal' }),
+      {
+        status: 500,
+      }
     );
   }
-  return NextResponse.json(savingGoal);
 }
 
 export async function PUT(req: NextRequest) {
@@ -57,8 +66,8 @@ export async function PUT(req: NextRequest) {
       },
       data: {
         name: inputSavingGoal.name,
-        amount: Number(inputSavingGoal.amount),
-        saved: Number(inputSavingGoal.saved),
+        amount: inputSavingGoal.amount,
+        saved: inputSavingGoal.saved,
         startDate: inputSavingGoal.startDate,
         endDate: inputSavingGoal.endDate,
         userId: dbUser.id,
@@ -88,11 +97,11 @@ export async function PATCH(
       },
       data: {
         name: inputSavingGoal.name,
-        amount: Number(inputSavingGoal.amount),
-        saved: Number(inputSavingGoal.amount),
+        amount: inputSavingGoal.amount,
+        saved: inputSavingGoal.amount,
         startDate: inputSavingGoal.startDate,
         endDate: inputSavingGoal.endDate,
-        userId: 1,
+        userId: inputSavingGoal.userId,
       },
     });
     return new NextResponse(JSON.stringify(income), { status: 200 });
@@ -115,7 +124,7 @@ export async function DELETE(
 
     await prisma.transaction.deleteMany({
       where: {
-        savingGoalId: id,
+        savingId: id,
       },
     });
     const deleteSavingGoal = await prisma.savingGoal.delete({

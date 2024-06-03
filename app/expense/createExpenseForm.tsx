@@ -5,10 +5,15 @@ import { expenseType } from '@prisma/client';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { expenseShema } from '../lib/shemas';
+import { CreateExpense } from './page';
+
+interface CreateExpenseProps {
+  onCreateExpense: (expense: CreateExpense) => Promise<void>;
+}
 
 type TCreateExpenseShema = z.infer<typeof expenseShema>;
 
-const CreateExpenseForm = ({ onCreateExpense }: any) => {
+const CreateExpenseForm = ({ onCreateExpense }: CreateExpenseProps) => {
   const {
     register,
     handleSubmit,
@@ -21,10 +26,10 @@ const CreateExpenseForm = ({ onCreateExpense }: any) => {
   const onSubmit: SubmitHandler<TCreateExpenseShema> = async (data) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      onCreateExpense(data);
+      await onCreateExpense(data);
       reset();
-    } catch {
-      new Error('this is bad');
+    } catch (error) {
+      new Error('Failed to submit');
     }
   };
 
@@ -37,7 +42,6 @@ const CreateExpenseForm = ({ onCreateExpense }: any) => {
         type="text"
         placeholder="Nosaukums"
         className="text-black rounded-sm"
-        required //ja pareizi saprotu tad uz .nonempty zod shema
       />
       {errors.name && (
         <p className="text-red-500">{`${errors.name.message}`}</p>
@@ -59,7 +63,7 @@ const CreateExpenseForm = ({ onCreateExpense }: any) => {
         {...register('amount', { valueAsNumber: true })}
         type="number"
         step="0.01"
-        placeholder="Apjoms"
+        placeholder="0.00"
         className="text-black rounded-sm"
       />
       {errors.amount && (
@@ -71,10 +75,9 @@ const CreateExpenseForm = ({ onCreateExpense }: any) => {
         {...register('date')}
         type="date"
         className="text-black rounded-sm"
-        required
       />
       <p className="mt-2">Tips:</p>
-      <select {...register('type')} className="text-black rounded-sm" required>
+      <select {...register('type')} className="text-black rounded-sm">
         {Object.values(expenseType).map((selectedType, index) => (
           <option key={index} value={selectedType}>
             {selectedType}
@@ -87,7 +90,6 @@ const CreateExpenseForm = ({ onCreateExpense }: any) => {
       >
         Pievienot izdevumu
       </button>
-      {/* <button onClick={() => setIsCreateModalOpen(true)}></button> */}
     </form>
   );
 };

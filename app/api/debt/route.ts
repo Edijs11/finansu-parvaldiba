@@ -3,27 +3,36 @@ const prisma = new PrismaClient();
 import { debtShema } from '@/app/lib/shemas';
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
-
 export async function GET() {
-  const { getUser } = getKindeServerSession();
-  const user = await getUser();
+  try {
+    const { getUser } = getKindeServerSession();
+    const user = await getUser();
 
-  if (!user || user == null || !user.id) {
-    throw new Error('Something went wrong with authentication' + user);
+    if (!user || user == null || !user.id) {
+      throw new Error('Something went wrong with authentication' + user);
+    }
+
+    let dbUser = await prisma.user.findUnique({
+      where: { kindeId: user.id },
+    });
+
+    const debts = await prisma.debt.findMany({
+      where: {
+        userId: dbUser.id,
+      },
+    });
+    const debtsWithParsedAmount = debts.map((debt: any) => ({
+      ...debt,
+      saved: parseFloat(debt.saved),
+      amount: parseFloat(debt.amount),
+    }));
+
+    return NextResponse.json(debtsWithParsedAmount);
+  } catch (error) {
+    return new NextResponse(JSON.stringify({ error: 'error getting debts' }), {
+      status: 500,
+    });
   }
-
-  let dbUser = await prisma.user.findUnique({
-    where: { kindeId: user.id },
-  });
-
-  const debts = await prisma.debt.findMany({
-    where: {
-      userId: dbUser.id,
-    },
-  });
-
-  return NextResponse.json(debts);
 }
 
 export async function POST(req: NextRequest) {
@@ -44,9 +53,9 @@ export async function POST(req: NextRequest) {
     const debt = await prisma.debt.create({
       data: {
         name: input.name,
-        amount: Number(input.amount),
-        saved: Number(input.saved),
-        interest_rate: Number(input.interest_rate),
+        amount: input.amount,
+        saved: input.saved,
+        interest_rate: input.interest_rate,
         startDate: input.startDate,
         endDate: input.endDate,
         userId: dbUser.id,

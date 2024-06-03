@@ -1,25 +1,18 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Income, incomeType } from '@prisma/client';
+import { incomeType } from '@prisma/client';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { incomeShema } from '../lib/shemas';
+import { CreateIncome } from './page';
 
-export type TCreateIncomeShema = z.infer<typeof incomeShema>;
+interface CreateIncomeProps {
+  onCreateIncome: (income: CreateIncome) => Promise<void>;
+}
+type TCreateIncomeShema = z.infer<typeof incomeShema>;
 
-// interface IncomeProps {
-//   onCreateIncome: (income: Income) => Promise<Income>;
-// }
-// interface incomeProps {
-//   name: string;
-//   amount: number;
-//   date: Date;
-//   type: incomeType;
-// }
-
-const CreateIncomeForm = ({ onCreateIncome }: any) => {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+const CreateIncomeForm = ({ onCreateIncome }: CreateIncomeProps) => {
   const {
     register,
     handleSubmit,
@@ -34,14 +27,14 @@ const CreateIncomeForm = ({ onCreateIncome }: any) => {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       await onCreateIncome(data);
       reset();
-    } catch {
-      new Error('this is bad');
+    } catch (error) {
+      new Error('Failed to submit');
     }
   };
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col mt-2">
-      <h1 className="text-xl place-self-center -mt-8">Pievienot ienākumu</h1>
+      <h1 className="text-xl place-self-center -mt-8">Pievienot Ienākumu</h1>
       <p className="mt-4">Nosaukums:</p>
       <input
         {...register('name')}
@@ -58,7 +51,7 @@ const CreateIncomeForm = ({ onCreateIncome }: any) => {
         {...register('amount', { valueAsNumber: true })}
         type="number"
         step="0.01"
-        placeholder="Apjoms"
+        placeholder="0.00"
         className="text-black rounded-sm"
       />
       {errors.amount && (
@@ -70,8 +63,8 @@ const CreateIncomeForm = ({ onCreateIncome }: any) => {
         {...register('date')}
         type="date"
         className="text-black rounded-sm"
-        required
       />
+
       <p className="mt-2">Tips:</p>
       <select {...register('type')} className="text-black rounded-sm">
         {Object.values(incomeType).map((selectedType, index) => (
@@ -86,8 +79,6 @@ const CreateIncomeForm = ({ onCreateIncome }: any) => {
       >
         Pievienot ienākumu
       </button>
-
-      {/* <button onClick={() => setIsCreateModalOpen(true)}></button> */}
     </form>
   );
 };

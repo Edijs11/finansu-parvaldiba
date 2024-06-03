@@ -4,12 +4,15 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { debtShema } from '../lib/shemas';
-import axios from 'axios';
+import { CreateDebt } from './page';
+
+interface CreateDebtProps {
+  onCreateDebt: (debt: CreateDebt) => Promise<void>;
+}
 
 type TCreateDebtShema = z.infer<typeof debtShema>;
 
-const CreateDebtForm = ({ onCreateDebt }: any) => {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+const CreateDebtForm = ({ onCreateDebt }: CreateDebtProps) => {
   const {
     register,
     handleSubmit,
@@ -22,11 +25,10 @@ const CreateDebtForm = ({ onCreateDebt }: any) => {
   const onSubmit: SubmitHandler<TCreateDebtShema> = async (data) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      // await axios.post(`${apiUrl}/api/debt`, data);
       onCreateDebt(data);
       reset();
     } catch {
-      new Error('this is bad');
+      new Error('Error submiting debt');
     }
   };
 
@@ -45,12 +47,12 @@ const CreateDebtForm = ({ onCreateDebt }: any) => {
         <p className="text-red-500">{`${errors.name.message}`}</p>
       )}
 
-      <p className="mt-2">Ietaupītais apjoms:</p>
+      <p className="mt-2">Parāda apjoms:</p>
       <input
         {...register('saved', { valueAsNumber: true })}
         type="number"
         step="0.01"
-        placeholder="Ietaupītais apjoms"
+        placeholder="0.00"
         className="text-black rounded-sm"
       />
       {errors.saved && (

@@ -8,29 +8,35 @@ export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const { getUser } = getKindeServerSession();
-  const user = await getUser();
+  try {
+    const { getUser } = getKindeServerSession();
+    const user = await getUser();
 
-  if (!user || user == null || !user.id) {
-    throw new Error('Something went wrong with authentication' + user);
+    if (!user || user == null || !user.id) {
+      throw new Error('Something went wrong with authentication' + user);
+    }
+
+    let dbUser = await prisma.user.findUnique({
+      where: { kindeId: user.id },
+    });
+
+    const id = Number(params.id);
+    const income = await prisma.income.findUnique({
+      where: {
+        incomeId: id,
+        userId: dbUser.id,
+      },
+    });
+
+    if (!income) {
+      return NextResponse.json({ error: 'Income not found' }, { status: 404 });
+    }
+    return NextResponse.json(income);
+  } catch (error) {
+    return new NextResponse(JSON.stringify({ error: 'error getting income' }), {
+      status: 500,
+    });
   }
-
-  let dbUser = await prisma.user.findUnique({
-    where: { kindeId: user.id },
-  });
-
-  const id = params.id;
-  const income = await prisma.income.findUnique({
-    where: {
-      incomeId: Number(id),
-      userId: dbUser.id,
-    },
-  });
-
-  if (!income) {
-    return NextResponse.json({ error: 'Income not found' }, { status: 404 });
-  }
-  return NextResponse.json(income);
 }
 
 export async function PUT(req: NextRequest) {
@@ -67,33 +73,6 @@ export async function PUT(req: NextRequest) {
     });
   }
 }
-
-// export async function PATCH(
-//   req: Request,
-//   { params }: { params: { id: string } }
-// ) {
-//   try {
-//     const body = await req.json();
-//     const inputIncome = incomeShema.parse(body);
-//     const income = await prisma.income.update({
-//       where: {
-//         id: { id: Number(params.id) },
-//       },
-//       data: {
-//         name: inputIncome.name,
-//         amount: Number(inputIncome.amount),
-//         date: inputIncome.date,
-//         type: inputIncome.type,
-//         userId: 1,
-//       },
-//     });
-//     return new NextResponse(JSON.stringify(income), { status: 200 });
-//   } catch (error) {
-//     return new NextResponse(JSON.stringify({ error: 'error editing income' }), {
-//       status: 500,
-//     });
-//   }
-// }
 
 export async function DELETE(
   req: NextRequest,

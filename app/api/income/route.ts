@@ -1,29 +1,43 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
+import { formatDate } from '@/app/components/functions';
 import { incomeShema } from '@/app/lib/shemas';
-// import { incomeShema } from '@/app/income/createIncomeForm';
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
-import { z } from 'zod';
 
 export async function GET() {
-  const { getUser } = getKindeServerSession();
-  const user = await getUser();
+  try {
+    const { getUser } = getKindeServerSession();
+    const user = await getUser();
 
-  if (!user || user == null || !user.id) {
-    throw new Error('Something went wrong with authentication' + user);
+    if (!user || user == null || !user.id) {
+      throw new Error('Something went wrong with authentication' + user);
+    }
+
+    let dbUser = await prisma.user.findUnique({
+      where: { kindeId: user.id },
+    });
+
+    const incomes = await prisma.income.findMany({
+      where: {
+        userId: dbUser.id,
+      },
+    });
+
+    const incomeWithParsedAmount = incomes.map((income: any) => ({
+      ...income,
+      amount: parseFloat(income.amount),
+    }));
+
+    return NextResponse.json(incomeWithParsedAmount);
+  } catch (error) {
+    return new NextResponse(
+      JSON.stringify({ error: 'error getting incomes' }),
+      {
+        status: 500,
+      }
+    );
   }
-
-  let dbUser = await prisma.user.findUnique({
-    where: { kindeId: user.id },
-  });
-
-  const incomes = await prisma.income.findMany({
-    where: {
-      userId: dbUser.id,
-    },
-  });
-  return NextResponse.json(incomes);
 }
 
 export async function POST(req: NextRequest) {
@@ -38,20 +52,22 @@ export async function POST(req: NextRequest) {
     let dbUser = await prisma.user.findUnique({
       where: { kindeId: user.id },
     });
+
     const body = await req.json();
-    const input = incomeShema.parse(body);
+    const inputIncome = incomeShema.parse(body);
     const income = await prisma.income.create({
       data: {
-        name: input.name,
-        amount: Number(input.amount),
-        date: input.date,
-        type: input.type,
+        name: inputIncome.name,
+        amount: Number(inputIncome.amount),
+        date: inputIncome.date,
+        type: inputIncome.type,
         userId: dbUser.id,
       },
     });
+
     return new NextResponse(JSON.stringify(income), { status: 201 });
   } catch (error) {
-    console.log('create error:', error);
+    console.log(error);
     return new NextResponse(JSON.stringify({ error: 'error posting income' }), {
       status: 500,
     });

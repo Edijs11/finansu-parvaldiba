@@ -9,28 +9,34 @@ export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const { getUser } = getKindeServerSession();
-  const user = await getUser();
+  try {
+    const { getUser } = getKindeServerSession();
+    const user = await getUser();
 
-  if (!user || user == null || !user.id) {
-    throw new Error('Something went wrong with authentication' + user);
+    if (!user || user == null || !user.id) {
+      throw new Error('Something went wrong with authentication' + user);
+    }
+
+    let dbUser = await prisma.user.findUnique({
+      where: { kindeId: user.id },
+    });
+    const id = params.id;
+    const debt = await prisma.debt.findUnique({
+      where: {
+        debtId: Number(id),
+        userId: dbUser.id,
+      },
+    });
+
+    if (!debt) {
+      return NextResponse.json({ error: 'Debt not found' }, { status: 404 });
+    }
+    return NextResponse.json(debt);
+  } catch (error) {
+    return new NextResponse(JSON.stringify({ error: 'error getting debt' }), {
+      status: 500,
+    });
   }
-
-  let dbUser = await prisma.user.findUnique({
-    where: { kindeId: user.id },
-  });
-  const id = params.id;
-  const debt = await prisma.debt.findUnique({
-    where: {
-      debtId: Number(id),
-      userId: dbUser.id,
-    },
-  });
-
-  if (!debt) {
-    return NextResponse.json({ error: 'Debt not found' }, { status: 404 });
-  }
-  return NextResponse.json(debt);
 }
 
 export async function PUT(req: NextRequest) {

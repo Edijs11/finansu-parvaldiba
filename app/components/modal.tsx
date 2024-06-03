@@ -14,12 +14,16 @@ const Modal = ({ onClose, children }: ModalProps) => {
         onClose();
       }
     };
-    document.addEventListener('mousedown', handleOutsideClick);
+    document.addEventListener('mouseup', handleOutsideClick, {
+      capture: true,
+    });
 
     return () => {
-      document.addEventListener('mousedown', handleOutsideClick);
+      document.removeEventListener('mouseup', handleOutsideClick, {
+        capture: true,
+      });
     };
-  }, [onClose]);
+  }, []);
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm flex justify-center items-center z-50">

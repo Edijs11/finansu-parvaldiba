@@ -5,12 +5,16 @@ import { incomeType } from '@prisma/client';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { incomeShema } from '../lib/shemas';
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useEffect } from 'react';
+import { Income } from './page';
 
 type TCreateIncomeShema = z.infer<typeof incomeShema>;
-const EditIncomeForm = ({ id }: { id: number }) => {
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+
+// interface CreateIncomeProps {
+//   onEditIncome: (income: Income) => Promise<void>;
+// }
+
+const EditIncomeForm = ({ updateIncome, onEditIncome }: any) => {
   const {
     register,
     handleSubmit,
@@ -20,34 +24,23 @@ const EditIncomeForm = ({ id }: { id: number }) => {
     resolver: zodResolver(incomeShema),
   });
 
-  const getCurrentIncome = async () => {
-    try {
-      const current = await axios.get(`${apiUrl}/api/income/${id}`);
-      return current.data;
-    } catch {
-      new Error('could not get the current user');
-      return null;
-    }
-  };
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchIncome = async () => {
       try {
-        const data = await getCurrentIncome();
-        reset(data);
+        reset(updateIncome);
       } catch {
-        new Error('cant get data');
+        new Error('could not get the income');
       }
     };
-    fetchData();
+    fetchIncome();
   }, [reset]);
 
   const onSubmit: SubmitHandler<TCreateIncomeShema> = async (data) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      const resp = await axios.put(`${apiUrl}/api/income/${id}`, data);
-      reset();
+      onEditIncome(data.incomeId, data);
     } catch {
-      new Error('could not submit');
+      new Error('failed to submit income');
     }
   };
 

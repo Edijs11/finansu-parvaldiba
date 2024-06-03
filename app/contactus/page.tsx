@@ -1,12 +1,11 @@
 'use client';
 
 import { LoginLink, useKindeBrowserClient } from '@kinde-oss/kinde-auth-nextjs';
-import axios from 'axios';
-import { useState } from 'react';
 import { email } from '../lib/shemas';
 import { z } from 'zod';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import axios from 'axios';
 
 type TContactFormShema = z.infer<typeof email>;
 
@@ -25,6 +24,7 @@ const ContactUs = () => {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       const email = await axios.post(`http://localhost:3000/api/send`, {
         subject: data.subject,
+        type: data.type,
         message: data.message,
       });
       reset(data);
@@ -40,9 +40,18 @@ const ContactUs = () => {
     );
   return isAuthenticated ? (
     <div className="mx-auto max-w-md mt-10">
-      <h1 className="text-2xl">Sazinies ar mums!</h1>
+      <h1 className="flex flex-col items-center text-3xl">Sazinies ar mums!</h1>
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col mt-6">
-        <label htmlFor="subject">Ziņas iemesls</label>
+        <label className="mt-4">Temats</label>
+        <select {...register('type')} className="text-black rounded-sm">
+          <option>Ieteikums</option>
+          <option>Sūdzība</option>
+          <option>Cits</option>
+        </select>
+
+        <label className="mt-4" htmlFor="subject">
+          Virsraksts
+        </label>
         <input
           id="subject"
           {...register('subject')}
@@ -53,10 +62,7 @@ const ContactUs = () => {
         {errors.subject && (
           <p className="text-red-500">{`${errors.subject.message}`}</p>
         )}
-        {/* <label className="mt-4">Message type</label>
-        <select className="text-black rounded-sm" required>
-          <option>some</option>
-        </select> */}
+
         <label htmlFor="message" className="mt-4">
           Apraksts
         </label>

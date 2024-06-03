@@ -2,14 +2,11 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function DELETE(
-  req: NextRequest,
-  {
-    params,
-  }: {
-    params: { transactionId: string };
-  }
-) {
+export async function DELETE({
+  params,
+}: {
+  params: { transactionId: string };
+}) {
   try {
     const transactionId = Number(params.transactionId);
 
@@ -17,14 +14,14 @@ export async function DELETE(
       where: {
         transactionId: transactionId,
       },
-      select: { savingId: true, amount: true },
+      select: { debtId: true, amount: true },
     });
 
-    const { savingId, amount } = transaction;
-    await prisma.savingGoal.update({
-      where: { savingId: savingId },
+    const { debtId, amount } = transaction;
+    await prisma.debt.update({
+      where: { debtId: debtId },
       data: {
-        saved: { decrement: amount },
+        amount: { decrement: amount },
       },
     });
     const deleteTransaction = await prisma.transaction.delete({

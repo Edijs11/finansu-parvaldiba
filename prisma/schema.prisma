@@ -16,19 +16,17 @@ datasource db {
 model User {
   id          Int          @id @default(autoincrement())
   kindeId     String       @unique
-  username    String?      @unique
   email       String       @unique
-  amount      Float?
   incomes     Income[]
   expenses    Expense[]
   savingGoals SavingGoal[]
   debts       Debt[]
 }
-//float uz decimal
+
 model Income {
   incomeId Int        @id @default(autoincrement())
   name     String
-  amount   Float
+  amount   Decimal
   date     DateTime
   type     incomeType
   user     User       @relation(fields: [userId], references: [id])
@@ -36,22 +34,21 @@ model Income {
 }
 
 enum incomeType {
-  SALARY
-  DIVIDENDS
-  GOVERMENT_ASSISTANCE
-  GIFT
-  REALASTATE
-  PROFIT_INCOME
-  INTEREST_INCOME
-  ROYALTY_INCOME
-  OTHER
+  ALGA
+  DIVIDENDES
+  DAVANA
+  VALSTS_PABALSTS
+  NEKUSTAMAIS_IPASUMS
+  PELNA
+  HONORARS
+  CITS
 }
 
 model Expense {
   expenseId   Int         @id @default(autoincrement())
   name        String
   description String?
-  amount      Float
+  amount      Decimal
   date        DateTime
   type        expenseType
   user        User        @relation(fields: [userId], references: [id])
@@ -59,22 +56,22 @@ model Expense {
 }
 
 enum expenseType {
-  FOOD_GROCERIES
-  UTILITIES
-  TRANSPORT
-  HEALTHCARE
-  INSURANCE
-  HOUSING
-  ENTERTAINMENT
-  REPAIR
-  OTHER
+  PARTIKA
+  IZKLAIDE
+  PRECES_IEGADE
+  TRANSPORTS
+  VESELIBA
+  APDROSINASANA
+  MAJOKLIS
+  REMONTS
+  CITS
 }
 
 model SavingGoal {
   savingId     Int           @id @default(autoincrement())
   name         String
-  amount       Float
-  saved        Float
+  amount       Decimal
+  saved        Decimal
   startDate    DateTime
   endDate      DateTime
   user         User          @relation(fields: [userId], references: [id])
@@ -85,8 +82,8 @@ model SavingGoal {
 model Debt {
   debtId        Int           @id @default(autoincrement())
   name          String
-  amount        Float
-  saved         Float
+  amount        Decimal
+  saved         Decimal
   startDate     DateTime
   endDate       DateTime
   interest_rate Int
@@ -94,14 +91,14 @@ model Debt {
   userId        Int
   transactions  Transaction[]
 }
-//savinggoalId -> savingId //nez vai vajag vsp
+
 model Transaction {
   transactionId Int             @id @default(autoincrement())
-  amount        Float
+  amount        Decimal
   date          DateTime
   type          TransactionType
-  savingGoal    SavingGoal?     @relation(fields: [savingGoalId], references: [savingId])
-  savingGoalId  Int?
+  savingGoal    SavingGoal?     @relation(fields: [savingId], references: [savingId])
+  savingId      Int?
   debt          Debt?           @relation(fields: [debtId], references: [debtId])
   debtId        Int?
 }

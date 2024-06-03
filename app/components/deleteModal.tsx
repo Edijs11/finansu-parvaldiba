@@ -12,19 +12,19 @@ const Modal = ({ onClose, id, confirmDelete }: DeleteModalProps) => {
           <button onClick={onClose} className="place-self-end text-2xl -mt-2">
             x
           </button>
-          <h1 className="text-lg">Are you sure you want to delete?</h1>
+          <h1 className="text-lg">Vai tiešām vēlies dzēst ierakstu?</h1>
           <div className="flex space-x-4 mt-4">
             <button
               onClick={() => confirmDelete(id)}
               className="p-2 bg-green-500 hover:bg-green-600 rounded text-white w-[70px]"
             >
-              Yes
+              Jā
             </button>
             <button
               onClick={onClose}
               className="p-2 bg-red-500 hover:bg-red-600 rounded text-white w-[70px]"
             >
-              No
+              Nē
             </button>
           </div>
         </div>

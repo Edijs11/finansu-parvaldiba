@@ -9,28 +9,37 @@ export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const { getUser } = getKindeServerSession();
-  const user = await getUser();
+  try {
+    const { getUser } = getKindeServerSession();
+    const user = await getUser();
 
-  if (!user || user == null || !user.id) {
-    throw new Error('Something went wrong with authentication' + user);
+    if (!user || user == null || !user.id) {
+      throw new Error('Something went wrong with authentication' + user);
+    }
+
+    let dbUser = await prisma.user.findUnique({
+      where: { kindeId: user.id },
+    });
+    const id = params.id;
+    const expense = await prisma.expense.findUnique({
+      where: {
+        expenseId: Number(id),
+        userId: dbUser.id,
+      },
+    });
+
+    if (!expense) {
+      return NextResponse.json({ error: 'Expense not found' }, { status: 404 });
+    }
+    return NextResponse.json(expense);
+  } catch (error) {
+    return new NextResponse(
+      JSON.stringify({ error: 'error getting expense' }),
+      {
+        status: 500,
+      }
+    );
   }
-
-  let dbUser = await prisma.user.findUnique({
-    where: { kindeId: user.id },
-  });
-  const id = params.id;
-  const expense = await prisma.expense.findUnique({
-    where: {
-      expenseId: Number(id),
-      userId: dbUser.id,
-    },
-  });
-
-  if (!expense) {
-    return NextResponse.json({ error: 'Expense not found' }, { status: 404 });
-  }
-  return NextResponse.json(expense);
 }
 
 export async function PUT(req: NextRequest) {
