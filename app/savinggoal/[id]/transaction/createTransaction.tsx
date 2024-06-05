@@ -4,7 +4,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { transactionShema } from '../../../lib/shemas';
-import axios from 'axios';
 
 type TCreateTransactionShema = z.infer<typeof transactionShema>;
 
@@ -25,7 +24,7 @@ const CreateTransactionForm = ({ onCreateTransaction }: any) => {
       onCreateTransaction(data);
       reset();
     } catch {
-      new Error('failed to submit');
+      new Error('failed to create transaction');
     }
   };
 

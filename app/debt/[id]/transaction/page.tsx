@@ -5,7 +5,6 @@ import { TransactionType } from '@prisma/client';
 import axios from 'axios';
 import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-// import CreateTransactionForm from './createTransaction';
 import Modal from '../../../components/modal';
 import { formatDate } from '@/app/components/functions';
 import CreateTransactionForm from './createTransaction';
@@ -24,13 +23,6 @@ const DebtTransaction = () => {
   const searchParams = useSearchParams();
   const currentDebt = searchParams.get('debt') ?? '';
   const debt = currentDebt ? JSON.parse(currentDebt) : null;
-
-  // const router = useRouter();
-
-  // const path = usePathname();
-  // const par = new URLSearchParams(window.location.search);
-  // console.log(par);
-
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [newTransaction, setNewTransaction] = useState<Transaction>({
     transactionId: 1,
@@ -62,18 +54,11 @@ const DebtTransaction = () => {
 
   const createTransaction = async (transaction: Transaction) => {
     try {
-      // const response = await axios.post(
-      //   `${apiUrl}/api/transaction`,
-      //   transaction
-      // );
       const response = await axios.post(
         `${apiUrl}/api/debt/${debt.debtId}/transaction`,
         transaction
       );
-      // goal.amount = goal.amount + transaction.amount;
-      // const updateUrl = new URLSearchParams(goal);
-      // updateUrl.set('amount', JSON.stringify(goal));
-      // replace(`${path}?${updateUrl.toString()}`);
+
       setTransactions([response.data, ...transactions]);
       setNewTransaction({
         transactionId: 1,
@@ -82,22 +67,6 @@ const DebtTransaction = () => {
         type: 'GOAL',
         debtId: 1,
       });
-      debt.amount = debt.amount + transaction.amount;
-      // const updatedGoal = JSON.stringify(goal);
-      // router.push(
-      //   {
-      //     pathname: `/savinggoal/${goal.savingId}/transaction`,
-      //     query: { savingGoal: updatedGoal },
-      //   }
-      //   // [router, goal]
-      // );
-      // redirect('');
-
-      //       const router = useRouter();
-      // goal.amount + transaction.amount;
-      // router.replace({
-      //   query: { ...router.query, key: goal.amount },
-      // });
     } catch (error) {
       console.error('Error creating transaction:', error);
     }

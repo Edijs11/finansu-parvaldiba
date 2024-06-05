@@ -23,7 +23,12 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
     const emailInput = email.parse(body);
 
-    if (!emailInput.subject || !emailInput.message || !userEmail) {
+    if (
+      !emailInput.type ||
+      !emailInput.subject ||
+      !emailInput.message ||
+      !userEmail
+    ) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -31,7 +36,7 @@ export async function POST(req: NextRequest) {
     }
 
     const { data, error } = await resend.emails.send({
-      from: 'Acme <onboarding@resend.dev>', //add domain
+      from: 'Acme <onboarding@resend.dev>',
       to: 'financemanagement004@gmail.com',
       reply_to: userEmail,
       subject: emailInput.type,

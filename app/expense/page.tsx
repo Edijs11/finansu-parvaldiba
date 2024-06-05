@@ -59,11 +59,6 @@ const Expense = () => {
   const [confirmDelete, setConfirmDelete] = useState(false);
   const [deleteId, setDeleteId] = useState<number>(0);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [expenseId, setExpenseId] = useState(0);
-  // const [updateExpense, setUpdateExpense] = useState({
-  //   id: '',
-  //   name: '',
-  // });
   const currMonth = () => {
     let now = new Date();
     now.setDate(1);
@@ -110,21 +105,24 @@ const Expense = () => {
 
   let height;
   let width;
-  if (expenses.length >= 20) {
-    height = 400;
-    width = 1000;
-  } else {
+  if (expenses.length < 10) {
     height = 300;
     width = 500;
+  } else if (expenses.length < 20) {
+    height = 300;
+    width = 800;
+  } else {
+    height = 400;
+    width = 1200;
   }
 
   const formatedExpenses = useMemo(() => {
-    if (startDate === '' && endDate === '') {
-      return expenses.map((expense) => ({
-        ...expense,
-        date: formatDate(expense.date),
-      }));
-    }
+    // if (startDate === '' && endDate === '') {
+    //   return expenses.map((expense) => ({
+    //     ...expense,
+    //     date: formatDate(expense.date),
+    //   }));
+    // }
     return expenses
       .filter((expense) => {
         return (
@@ -139,8 +137,9 @@ const Expense = () => {
   }, [expenses, startDate, endDate]);
 
   const removeDateFilter = () => {
-    setStartDate('');
-    setEndDate('');
+    const currentYear = new Date().getFullYear();
+    setStartDate(new Date(currentYear, 0, 1 + 1).toISOString().split('T')[0]);
+    setEndDate(new Date(currentYear, 11, 31 + 1).toISOString().split('T')[0]);
   };
 
   const expenseTypeAndCount: { type: expenseType; amount: number }[] = [];

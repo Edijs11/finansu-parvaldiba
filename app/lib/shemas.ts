@@ -77,11 +77,6 @@ export const savingGoalShema = z
     path: ['startDate'],
   });
 
-// .refine((goal) => goal.amount < goal.saved, {
-//   message: 'Mērķa ietaupītā summa nevar pārsniegt vēlamo mērķa summu',
-//   path: ['amount'],
-// });
-
 export const debtShema = z
   .object({
     debtId: z.number().optional(),

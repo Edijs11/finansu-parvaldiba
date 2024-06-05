@@ -15,15 +15,12 @@ const Home = () => {
       <div className="max-w-5xl mx-auto flex-col lg:flex-row lg:space-x-5 sm:flex-col">
         <div className="sm:flex items-center justify-between mt-10">
           <div className="sm:w-1/2 text-2xl leading-9 p-2">
-            <h1 className="text-4xl">Budžetēšana</h1>
+            <h1 className="text-4xl">Budžeta uzstādīšana</h1>
             <div className="mt-4">
-              {/* Sākt pārvaldīt savas finanses ir viena no svarīgākajām lietām
-              pilnvērtīgākai dzīvei. Vienmēr ir labāk sākt tagad, nevis gaidīt
-              un vēlāk nožēlojiet, ka nesāki apgūt finanses jau agrāk. Šī
-              lietotne ir paredzēta, lai uzskāktu finanšu pārvaldību. */}
               Pirms finanšu pārvaldīšanas uzsākšanas lietotne iesaka izveidot
-              sev piemērotu budžeta sadalījumu nepieciešamībām, vēlmēm, parādiem
-              un uzkrājumiem
+              sev piemērotu budžetu sadalot to trīs daļās: nepieciešamības,
+              vēlmes, parādi un uzkrājumi Kā piemēru var ņemt 50/30/20
+              sadalījumu
             </div>
           </div>
           <div className="flex-row">

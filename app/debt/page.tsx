@@ -46,9 +46,6 @@ const Debt = () => {
     endDate: new Date(),
     userId: 1,
   });
-  // const [updateDebt, setUpdateDebt] = useState({
-  //   name: '',
-  // });
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [deleteId, setDeleteId] = useState<number>(0);

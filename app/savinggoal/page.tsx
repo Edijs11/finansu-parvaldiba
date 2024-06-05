@@ -245,7 +245,7 @@ const SavingGoal = () => {
                     <Link
                       className="px-4"
                       href={{
-                        pathname: `/savinggoal/${savingGoal.savingId}/transaction`, //?savingGoal${savingGoal.savingId}
+                        pathname: `/savinggoal/${savingGoal.savingId}/transaction`,
                         query: { savingGoal: JSON.stringify(savingGoal) },
                       }}
                     >

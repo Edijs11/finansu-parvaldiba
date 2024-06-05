@@ -10,7 +10,7 @@ import { CreateIncome } from './page';
 interface CreateIncomeProps {
   onCreateIncome: (income: CreateIncome) => Promise<void>;
 }
-type TCreateIncomeShema = z.infer<typeof incomeShema>;
+export type TCreateIncomeShema = z.infer<typeof incomeShema>;
 
 const CreateIncomeForm = ({ onCreateIncome }: CreateIncomeProps) => {
   const {
@@ -28,7 +28,7 @@ const CreateIncomeForm = ({ onCreateIncome }: CreateIncomeProps) => {
       await onCreateIncome(data);
       reset();
     } catch (error) {
-      new Error('Failed to submit');
+      throw new Error('Failed to submit income');
     }
   };
 

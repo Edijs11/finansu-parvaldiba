@@ -21,74 +21,10 @@ interface Transaction {
 const GoalTransaction = () => {
   const { isAuthenticated, isLoading } = useKindeBrowserClient();
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-  // const router = useRouter();
-  // const { replace } = useRouter();
   const searchParams = useSearchParams();
   const savingGoal = searchParams.get('savingGoal') ?? '';
   const goal = savingGoal ? JSON.parse(savingGoal) : null;
   const pathname = usePathname();
-  // console.log(searchParams);
-  // const newUrl = new URLSearchParams(searchParams.toString());
-  // console.log(newUrl.get('saved'));
-  const handleSavedChange = (saved: number) => {
-    const params = new URLSearchParams(window.location.search);
-    // redirect(`${apiUrl}/api/savinggoal/${goal.savingId}/transaction`);
-    // params.set('saved', '10000');
-    // const newUrl = `${window.location.pathname}?${params.toString()}`;
-    // window.history.replaceState(null, '', newUrl);
-    // console.log(newUrl);
-
-    // const decodedUrl = decodeURIComponent(params.toString());
-    // const dec = new URLSearchParams(decodedUrl);
-    // dec.set('saved', (Number(goal.saved) + saved).toString());
-    // const encodedUrl = encodeURIComponent(dec.toString());
-    // console.log(encodedUrl);
-
-    // const newUrl = `${pathname}?${encodedUrl}`;
-    // console.log(newUrl);
-    // window.history.replaceState(null, '', newUrl);
-
-    // if (saved) {
-    //   const newVal = parseFloat(goal.saved) + saved;
-    //   params.set('saved', newVal.toString());
-    // }
-    // console.log(`${window.location.search}?${params.toString()}`);
-    // goal.saved = parseFloat(goal.saved) + saved;
-    // redirect(`${pathname}?${params.toString()}`);
-  };
-
-  // const handleGoalTransactions = (saved: number) => {
-  //   const params = new URLSearchParams(searchParams.toString());
-  //   const savedAmount = params.get('saved');
-  //   // const newVal = savedAmount ? parseFloat(savedAmount) + saved : savedAmount;
-
-  //   console.log(savedAmount);
-  //   // if (!isNaN(newVal)) {
-  //   //   params.set('saved', newVal.toString());
-  //   // }
-  // };
-
-  // console.log(newUrl);
-  // const handleNewTransaction = (amount: string) => {
-  //   // const params = new URLSearchParams(searchParams);
-  //   // const currentAmount = params.get('saved') || 0;
-  //   // console.log(currentAmount);
-  //   // params.set('amount', amount);
-  //   // router.push(`${pathname}?${params.toString()}`);
-  //   const currentAmount = searchParams.get('saved');
-  //   console.log(currentAmount);
-  //   if (currentAmount !== null) {
-  //     const newAmount = parseFloat(currentAmount) + amount;
-
-  //     const newUrl = new URLSearchParams(searchParams.toString());
-  //     newUrl.set('saved', newAmount);
-  //     router.push(`${window.location.pathname}?${newUrl.toString()}`);
-  //   }
-  // };
-
-  // const path = usePathname();
-  // const par = new URLSearchParams(window.location.search);
-  // console.log(par);
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [newTransaction, setNewTransaction] = useState<Transaction>({
@@ -121,21 +57,11 @@ const GoalTransaction = () => {
 
   const createTransaction = async (transaction: Transaction) => {
     try {
-      // const response = await axios.post(
-      //   `${apiUrl}/api/transaction`,
-      //   transaction
-      // );
       const response = await axios.post(
         `${apiUrl}/api/savinggoal/${goal.savingId}/transaction`,
         transaction
       );
-      // goal.amount = goal.amount + transaction.amount;
-      // const updateUrl = new URLSearchParams(goal);
-      // updateUrl.set('amount', JSON.stringify(goal));
-      // replace(`${path}?${updateUrl.toString()}`);
       setTransactions([response.data, ...transactions]);
-      // handleNewTransaction(response.data.amount);
-      handleSavedChange(transaction.amount);
       setNewTransaction({
         transactionId: 1,
         amount: 0,
@@ -143,22 +69,7 @@ const GoalTransaction = () => {
         type: 'GOAL',
         savingGoalId: 1,
       });
-      goal.amount = goal.amount + transaction.amount;
-      // const updatedGoal = JSON.stringify(goal);
-      // router.push(
-      //   {
-      //     pathname: `/savinggoal/${goal.savingId}/transaction`,
-      //     query: { savingGoal: updatedGoal },
-      //   }
-      //   // [router, goal]
-      // );
-      // redirect('');
-
-      //       const router = useRouter();
-      // goal.amount + transaction.amount;
-      // router.replace({
-      //   query: { ...router.query, key: goal.amount },
-      // });
+      // goal.amount = goal.amount + transaction.amount;
     } catch (error) {
       console.error('Error creating transaction:', error);
     }

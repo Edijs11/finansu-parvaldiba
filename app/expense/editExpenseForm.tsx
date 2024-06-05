@@ -1,12 +1,11 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { expenseType, incomeType } from '@prisma/client';
+import { expenseType } from '@prisma/client';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { expenseShema } from '../lib/shemas';
-import { useEffect, useState } from 'react';
-import axios from 'axios';
+import { useEffect } from 'react';
 
 type TCreateExpenseShema = z.infer<typeof expenseShema>;
 const EditExpenseForm = ({ updateExpense, onEditExpense }: any) => {
@@ -98,7 +97,6 @@ const EditExpenseForm = ({ updateExpense, onEditExpense }: any) => {
       >
         Rediģēt izdevumu
       </button>
-      {/* <button onClick={() => setIsCreateModalOpen(true)}></button> */}
     </form>
   );
 };

@@ -6,13 +6,8 @@ import { SubmitHandler, useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { incomeShema } from '../lib/shemas';
 import { useEffect } from 'react';
-import { Income } from './page';
 
 type TCreateIncomeShema = z.infer<typeof incomeShema>;
-
-// interface CreateIncomeProps {
-//   onEditIncome: (income: Income) => Promise<void>;
-// }
 
 const EditIncomeForm = ({ updateIncome, onEditIncome }: any) => {
   const {
@@ -39,8 +34,8 @@ const EditIncomeForm = ({ updateIncome, onEditIncome }: any) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       onEditIncome(data.incomeId, data);
-    } catch {
-      new Error('failed to submit income');
+    } catch (error) {
+      throw new Error('failed to submit income');
     }
   };
 

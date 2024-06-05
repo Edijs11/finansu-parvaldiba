@@ -94,7 +94,6 @@ const Income = () => {
   incomes.sort(
     (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
   );
-  // console.log(incomes);
 
   useEffect(() => {
     const fetchIncomes = async () => {
@@ -109,12 +108,12 @@ const Income = () => {
   }, [newIncome]);
 
   const formatedIncomes = useMemo(() => {
-    if (startDate === '' && endDate === '') {
-      return incomes.map((income) => ({
-        ...income,
-        date: formatDate(income.date),
-      }));
-    }
+    // if (startDate === '' && endDate === '') {
+    //   return incomes.map((income) => ({
+    //     ...income,
+    //     date: formatDate(income.date),
+    //   }));
+    // }
     return incomes
       .filter((income) => {
         return (
@@ -226,12 +225,15 @@ const Income = () => {
 
   let height;
   let width;
-  if (incomes.length >= 20) {
-    height = 400;
-    width = 1000;
-  } else {
+  if (incomes.length < 10) {
     height = 300;
     width = 500;
+  } else if (incomes.length < 20) {
+    height = 300;
+    width = 800;
+  } else {
+    height = 400;
+    width = 1200;
   }
 
   if (isLoading)
@@ -358,7 +360,6 @@ const Income = () => {
           <tbody>
             {formatedIncomes.toReversed().map((income) => (
               <tr key={income.incomeId} className="hover:bg-slate-800">
-                {/* border-r */}
                 <td className="px-4 py-2">{income.name}</td>
                 <td className="px-4 py-2">{income.amount.toFixed(2)}€</td>
                 <td className="px-4 py-2">{income.type}</td>

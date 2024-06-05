@@ -82,36 +82,6 @@ export async function PUT(req: NextRequest) {
   }
 }
 
-// export async function PATCH(
-//   req: Request,
-//   { params }: { params: { id: string } }
-// ) {
-//   try {
-//     const body = await req.json();
-//     const inputExpense = expenseShema.parse(body);
-//     const expense = await prisma.expense.update({
-//       where: {
-//         id: { id: Number(params.id) },
-//       },
-//       data: {
-//         name: inputExpense.name,
-//         amount: Number(inputExpense.amount),
-//         date: inputExpense.date,
-//         type: inputExpense.type,
-//         userId: 1,
-//       },
-//     });
-//     return new NextResponse(JSON.stringify(expense), { status: 200 });
-//   } catch (error) {
-//     return new NextResponse(
-//       JSON.stringify({ error: 'error editing expense' }),
-//       {
-//         status: 500,
-//       }
-//     );
-//   }
-// }
-
 export async function DELETE(
   req: NextRequest,
   { params }: { params: { id: string } }
