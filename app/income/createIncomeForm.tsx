@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { incomeType } from '@prisma/client';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { incomeShema } from '../lib/shemas';
+import { incomeShema } from '../models/shemas';
 import { CreateIncome } from './page';
 
 interface CreateIncomeProps {
@@ -67,8 +67,8 @@ const CreateIncomeForm = ({ onCreateIncome }: CreateIncomeProps) => {
 
       <p className="mt-2">Tips:</p>
       <select {...register('type')} className="text-black rounded-sm">
-        {Object.values(incomeType).map((selectedType, index) => (
-          <option key={index} value={selectedType}>
+        {Object.values(incomeType).map((selectedType) => (
+          <option key={selectedType} value={selectedType}>
             {selectedType}
           </option>
         ))}

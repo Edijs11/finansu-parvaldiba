@@ -1,6 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
-import { transactionShema } from '@/app/lib/shemas';
+import { transactionShema } from '../../../../models/shemas';
 import { TransactionType } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -68,7 +68,6 @@ export async function POST(
 
     return new NextResponse(JSON.stringify(transaction), { status: 201 });
   } catch (error) {
-    console.log('create error:', error);
     return new NextResponse(
       JSON.stringify({ error: 'some error posting transaction' }),
       { status: 500 }

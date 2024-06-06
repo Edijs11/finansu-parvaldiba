@@ -3,13 +3,11 @@
 import { LoginLink, useKindeBrowserClient } from '@kinde-oss/kinde-auth-nextjs';
 import { TransactionType } from '@prisma/client';
 import axios from 'axios';
-import { usePathname, useSearchParams, redirect } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import CreateTransactionForm from './createTransaction';
 import Modal from '../../../components/modal';
 import { formatDate } from '@/app/components/functions';
-import { useRouter } from 'next/navigation';
-
 interface Transaction {
   transactionId: number;
   amount: number;
@@ -24,7 +22,6 @@ const GoalTransaction = () => {
   const searchParams = useSearchParams();
   const savingGoal = searchParams.get('savingGoal') ?? '';
   const goal = savingGoal ? JSON.parse(savingGoal) : null;
-  const pathname = usePathname();
 
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [newTransaction, setNewTransaction] = useState<Transaction>({
@@ -69,7 +66,6 @@ const GoalTransaction = () => {
         type: 'GOAL',
         savingGoalId: 1,
       });
-      // goal.amount = goal.amount + transaction.amount;
     } catch (error) {
       console.error('Error creating transaction:', error);
     }

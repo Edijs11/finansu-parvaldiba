@@ -1,6 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
-import { transactionShema } from '@/app/lib/shemas';
+import { transactionShema } from '../../../../models/shemas';
 import { TransactionType } from '@prisma/client';
 import { NextRequest, NextResponse } from 'next/server';
 

@@ -2,7 +2,7 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 import { NextRequest, NextResponse } from 'next/server';
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
-import { incomeShema } from '@/app/lib/shemas';
+import { incomeShema } from '../../../models/shemas';
 
 export async function GET(
   req: NextRequest,
@@ -41,16 +41,6 @@ export async function GET(
 
 export async function PUT(req: NextRequest) {
   try {
-    // const { getUser } = getKindeServerSession();
-    // const user = await getUser();
-
-    // if (!user || user == null || !user.id) {
-    //   throw new Error('Something went wrong with authentication' + user);
-    // }
-
-    // let dbUser = await prisma.user.findUnique({
-    //   where: { kindeId: user.id },
-    // });
     const body = await req.json();
     const inputIncome = incomeShema.parse(body);
     const income = await prisma.income.update({
@@ -67,7 +57,6 @@ export async function PUT(req: NextRequest) {
     });
     return new NextResponse(JSON.stringify(income), { status: 200 });
   } catch (error) {
-    console.log(error);
     return new NextResponse(JSON.stringify({ error: error }), {
       status: 500,
     });
@@ -79,16 +68,6 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    // const { getUser } = getKindeServerSession();
-    // const user = await getUser();
-
-    // if (!user || user == null || !user.id) {
-    //   throw new Error('Something went wrong with authentication' + user);
-    // }
-
-    // let dbUser = await prisma.user.findUnique({
-    //   where: { kindeId: user.id },
-    // });
     const id = params.id;
 
     const deleteIncome = await prisma.income.delete({

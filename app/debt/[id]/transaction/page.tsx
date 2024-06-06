@@ -147,13 +147,6 @@ const DebtTransaction = () => {
                 <td className="px-4 py-2">{formatDate(transaction.date)}</td>
                 <td className="px-4 py-2">
                   <button
-                    onClick={() => console.log('hi')}
-                    className="bg-orange-300 hover:bg-orange-400 rounded text-white p-2 w-[70px]"
-                  >
-                    Rediģēt
-                  </button>
-
-                  <button
                     onClick={() => deleteTransaction(transaction.transactionId)}
                     className="bg-red-500 hover:bg-red-600 rounded text-white p-2 w-[70px]"
                   >

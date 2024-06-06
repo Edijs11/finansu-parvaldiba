@@ -3,7 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { savingGoalShema } from '../lib/shemas';
+import { savingGoalShema } from '../models/shemas';
 import { useEffect } from 'react';
 
 type TCreateSavingGoalShema = z.infer<typeof savingGoalShema>;
@@ -22,7 +22,7 @@ const EditSavingGoalForm = ({ savingGoalAction, onEditSavingGoal }: any) => {
       try {
         reset(savingGoalAction);
       } catch {
-        new Error('could not get the saving goal');
+        throw new Error('could not get the saving goal');
       }
     };
     fetchData();
@@ -33,7 +33,7 @@ const EditSavingGoalForm = ({ savingGoalAction, onEditSavingGoal }: any) => {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       onEditSavingGoal(data.savingId, data);
     } catch {
-      new Error('could not submit saving goal');
+      throw new Error('could not submit saving goal');
     }
   };
 

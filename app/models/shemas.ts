@@ -1,6 +1,5 @@
 import { z } from 'zod';
-//models nevis iekš lib
-//apskati .regex number to decimal
+
 export const incomeShema = z.object({
   incomeId: z.number().optional(),
   name: z

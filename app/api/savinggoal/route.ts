@@ -1,6 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
-import { savingGoalShema } from '@/app/lib/shemas';
+import { formatDate } from '@/app/components/functions';
+import { savingGoalShema } from '../../models/shemas';
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -25,6 +26,8 @@ export async function GET() {
       ...goal,
       amount: parseFloat(goal.amount),
       saved: parseFloat(goal.saved),
+      startDate: formatDate(goal.startDate),
+      endDate: formatDate(goal.endDate),
     }));
     return NextResponse.json(goalWithParsedAmount);
   } catch (error) {
@@ -63,7 +66,6 @@ export async function POST(req: NextRequest) {
     });
     return new NextResponse(JSON.stringify(savingGoal), { status: 201 });
   } catch (error) {
-    console.log(error);
     return new NextResponse(
       JSON.stringify({ error: 'Error posting savingGoal' }),
       { status: 500 }

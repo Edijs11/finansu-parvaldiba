@@ -3,7 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { savingGoalShema } from '../lib/shemas';
+import { savingGoalShema } from '../models/shemas';
 import { CreateSavingGoal } from './page';
 
 interface CreateSavingGoalProps {
@@ -29,7 +29,7 @@ const CreateSavingGoalForm = ({
       onCreateSavingGoal(data);
       reset();
     } catch {
-      new Error('Failed to submit');
+      throw new Error('Failed to submit saving goal');
     }
   };
 

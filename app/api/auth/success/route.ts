@@ -17,7 +17,7 @@ export async function GET() {
   });
 
   if (!dbUser) {
-    dbUser = await prisma.user.create({
+    await prisma.user.create({
       data: {
         kindeId: user.id,
         email: user.email ?? '',

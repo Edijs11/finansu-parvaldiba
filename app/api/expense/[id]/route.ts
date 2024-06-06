@@ -3,7 +3,7 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 import { NextRequest, NextResponse } from 'next/server';
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
-import { expenseShema } from '@/app/lib/shemas';
+import { expenseShema } from '../../../models/shemas';
 
 export async function GET(
   req: NextRequest,
@@ -72,7 +72,6 @@ export async function PUT(req: NextRequest) {
     });
     return new NextResponse(JSON.stringify(expense), { status: 200 });
   } catch (error) {
-    console.log(error);
     return new NextResponse(
       JSON.stringify({ error: 'error editing expense' }),
       {

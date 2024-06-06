@@ -103,8 +103,8 @@ const Expense = () => {
     fetchExpense();
   }, [newExpense]);
 
-  let height;
-  let width;
+  let height: number;
+  let width: number;
   if (expenses.length < 10) {
     height = 300;
     width = 500;
@@ -117,12 +117,6 @@ const Expense = () => {
   }
 
   const formatedExpenses = useMemo(() => {
-    // if (startDate === '' && endDate === '') {
-    //   return expenses.map((expense) => ({
-    //     ...expense,
-    //     date: formatDate(expense.date),
-    //   }));
-    // }
     return expenses
       .filter((expense) => {
         return (
@@ -142,8 +136,13 @@ const Expense = () => {
     setEndDate(new Date(currentYear, 11, 31 + 1).toISOString().split('T')[0]);
   };
 
-  const expenseTypeAndCount: { type: expenseType; amount: number }[] = [];
+  const expenseTypeAndCount: {
+    id: number;
+    type: expenseType;
+    amount: number;
+  }[] = [];
 
+  let expenseTotalAmountId = 1;
   formatedExpenses.forEach((expense) => {
     const existingType = expenseTypeAndCount.findIndex(
       (item) => item.type === expense.type
@@ -151,7 +150,11 @@ const Expense = () => {
     if (existingType !== -1) {
       expenseTypeAndCount[existingType].amount += expense.amount;
     } else {
-      expenseTypeAndCount.push({ type: expense.type, amount: expense.amount });
+      expenseTypeAndCount.push({
+        id: expenseTotalAmountId++,
+        type: expense.type,
+        amount: expense.amount,
+      });
     }
   });
 
@@ -227,12 +230,12 @@ const Expense = () => {
   };
 
   let precentageChangeFromLastMonth =
-    ((calcTotalExpense(expensesCurrentMonth) -
-      calcTotalExpense(expensesLastMonth)) /
-      calcTotalExpense(expensesLastMonth)) *
+    ((calcTotalExpense(expensesLastMonth) -
+      calcTotalExpense(expensesCurrentMonth)) /
+      calcTotalExpense(expensesCurrentMonth)) *
     100;
 
-  var tooltip: string;
+  let tooltip: string;
   const CustomTooltip = ({ active, payload }: any) => {
     if (!active || !tooltip) return null;
     for (const bar of payload) {
@@ -327,8 +330,11 @@ const Expense = () => {
               <YAxis />
               <Tooltip content={<CustomTooltip />} />
               <Bar dataKey="amount" onMouseOver={() => (tooltip = 'amount')}>
-                {formatedExpenses.map((expense, index) => (
-                  <Cell key={index} fill={expenseTypeColors[expense.type]} />
+                {formatedExpenses.map((expense) => (
+                  <Cell
+                    key={expense.expenseId}
+                    fill={expenseTypeColors[expense.type]}
+                  />
                 ))}
               </Bar>
             </BarChart>
@@ -350,9 +356,9 @@ const Expense = () => {
                 fill="#8884d8"
                 onMouseOver={() => (tooltip = 'amount')}
               >
-                {expenseTypeAndCount.map((expense, index) => (
+                {expenseTypeAndCount.map((expense) => (
                   <Cell
-                    key={`cell-${index}`}
+                    key={`cell-${expense.id}`}
                     fill={expenseTypeColors[expense.type]}
                   />
                 ))}
@@ -419,7 +425,7 @@ const Expense = () => {
                   {expense.description}
                 </td>
 
-                <td className="px-4 py-2">{expense.amount.toFixed(2)}€</td>
+                <td className="px-4 py-2">{expense.amount}€</td>
                 <td className="px-4 py-2">{expense.type}</td>
                 <td className="px-4 py-2">{expense.date.toString()}</td>
                 <td className="px-2 py-2">

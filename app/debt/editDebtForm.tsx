@@ -3,7 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { debtShema } from '../lib/shemas';
+import { debtShema } from '../models/shemas';
 import { useEffect } from 'react';
 
 type TCreateDebtShema = z.infer<typeof debtShema>;
@@ -22,7 +22,7 @@ const EditDebtForm = ({ updateDebt, onEditDebt }: any) => {
       try {
         reset(updateDebt);
       } catch {
-        new Error('could not get the debt');
+        throw new Error('could not get the debt');
       }
     };
     fetchData();
@@ -33,7 +33,7 @@ const EditDebtForm = ({ updateDebt, onEditDebt }: any) => {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       onEditDebt(data.debtId, data);
     } catch {
-      new Error('could not submit debt');
+      throw new Error('could not submit debt');
     }
   };
 

@@ -1,7 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 
 const prisma = new PrismaClient();
-import { debtShema } from '@/app/lib/shemas';
+import { debtShema } from '../../../models/shemas';
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 

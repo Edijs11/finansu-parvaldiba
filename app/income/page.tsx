@@ -108,12 +108,6 @@ const Income = () => {
   }, [newIncome]);
 
   const formatedIncomes = useMemo(() => {
-    // if (startDate === '' && endDate === '') {
-    //   return incomes.map((income) => ({
-    //     ...income,
-    //     date: formatDate(income.date),
-    //   }));
-    // }
     return incomes
       .filter((income) => {
         return (
@@ -133,8 +127,10 @@ const Income = () => {
     setEndDate(new Date(currentYear, 11, 31 + 1).toISOString().split('T')[0]);
   };
 
-  const incomeTypeAndCount: { type: incomeType; amount: number }[] = [];
+  const incomeTypeAndCount: { id: number; type: incomeType; amount: number }[] =
+    [];
 
+  let incomeTotalAmountId = 1;
   formatedIncomes.forEach((income) => {
     const existingType = incomeTypeAndCount.findIndex(
       (item) => item.type === income.type
@@ -142,7 +138,11 @@ const Income = () => {
     if (existingType !== -1) {
       incomeTypeAndCount[existingType].amount += income.amount;
     } else {
-      incomeTypeAndCount.push({ type: income.type, amount: income.amount });
+      incomeTypeAndCount.push({
+        id: incomeTotalAmountId++,
+        type: income.type,
+        amount: income.amount,
+      });
     }
   });
 
@@ -205,7 +205,7 @@ const Income = () => {
     setConfirmDelete(true);
   };
 
-  var tooltip: string;
+  let tooltip: string;
   const CustomTooltip = ({ active, payload }: any) => {
     if (!active || !tooltip) return null;
     for (const bar of payload) {
@@ -223,8 +223,8 @@ const Income = () => {
     }
   };
 
-  let height;
-  let width;
+  let height: number;
+  let width: number;
   if (incomes.length < 10) {
     height = 300;
     width = 500;
@@ -274,8 +274,11 @@ const Income = () => {
               <YAxis />
               <Tooltip content={<CustomTooltip />} />
               <Bar dataKey="amount" onMouseOver={() => (tooltip = 'amount')}>
-                {formatedIncomes.map((income, index) => (
-                  <Cell key={index} fill={incomeTypeColors[income.type]} />
+                {formatedIncomes.map((income) => (
+                  <Cell
+                    key={income.incomeId}
+                    fill={incomeTypeColors[income.type]}
+                  />
                 ))}
               </Bar>
             </BarChart>
@@ -297,9 +300,9 @@ const Income = () => {
                 fill="#8884d8"
                 onMouseOver={() => (tooltip = 'amount')}
               >
-                {incomeTypeAndCount.map((income, index) => (
+                {incomeTypeAndCount.map((income) => (
                   <Cell
-                    key={`cell-${index}`}
+                    key={`cell-${income.id}`}
                     fill={incomeTypeColors[income.type]}
                   />
                 ))}
@@ -361,7 +364,7 @@ const Income = () => {
             {formatedIncomes.toReversed().map((income) => (
               <tr key={income.incomeId} className="hover:bg-slate-800">
                 <td className="px-4 py-2">{income.name}</td>
-                <td className="px-4 py-2">{income.amount.toFixed(2)}€</td>
+                <td className="px-4 py-2">{income.amount}€</td>
                 <td className="px-4 py-2">{income.type}</td>
                 <td className="px-4 py-2">{income.date}</td>
                 <td className="px-4 py-2">

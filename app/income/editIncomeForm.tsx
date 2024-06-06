@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { incomeType } from '@prisma/client';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { incomeShema } from '../lib/shemas';
+import { incomeShema } from '../models/shemas';
 import { useEffect } from 'react';
 
 type TCreateIncomeShema = z.infer<typeof incomeShema>;
@@ -24,7 +24,7 @@ const EditIncomeForm = ({ updateIncome, onEditIncome }: any) => {
       try {
         reset(updateIncome);
       } catch {
-        new Error('could not get the income');
+        throw new Error('could not get the income');
       }
     };
     fetchIncome();
@@ -74,8 +74,8 @@ const EditIncomeForm = ({ updateIncome, onEditIncome }: any) => {
       />
       <p className="mt-2">Tips:</p>
       <select {...register('type')} className="text-black rounded-sm" required>
-        {Object.values(incomeType).map((selectedType, index) => (
-          <option key={index} value={selectedType}>
+        {Object.values(incomeType).map((selectedType) => (
+          <option key={selectedType} value={selectedType}>
             {selectedType}
           </option>
         ))}

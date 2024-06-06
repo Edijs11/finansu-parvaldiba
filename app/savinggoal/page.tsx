@@ -8,7 +8,7 @@ import CreateSavingGoalForm from './createSavingGoalForm';
 import Link from 'next/link';
 import Frame from '../components/frame';
 import EditSavingGoalForm from './editSavingGoalForm';
-import { formatDate, precentageCalculation } from '../components/functions';
+import { precentageCalculation } from '../components/functions';
 import DeleteModal from '../components/deleteModal';
 
 interface SavingGoal {
@@ -59,12 +59,6 @@ const SavingGoal = () => {
     };
     fetchSavingGoals();
   }, [savingGoalAction]);
-
-  const formatedSavingGoals = savingGaols.map((savingGaol) => ({
-    ...savingGaol,
-    startDate: formatDate(savingGaol.startDate),
-    endDate: formatDate(savingGaol.endDate),
-  }));
 
   const createSavingGoal = async (savingGoal: CreateSavingGoal) => {
     try {
@@ -137,6 +131,7 @@ const SavingGoal = () => {
   };
 
   const goalPrecentage = savingGaols.map((savingGoal) => ({
+    id: savingGoal.savingId,
     name: savingGoal.name,
     precentage: precentageCalculation(
       savingGoal.saved,
@@ -177,8 +172,8 @@ const SavingGoal = () => {
 
         {savingGaols.length ? (
           <Frame title="Taupīšanas mērķu progress">
-            {goalPrecentage.map((goal, index) => (
-              <div className="w-full" key={index}>
+            {goalPrecentage.map((goal) => (
+              <div className="w-full" key={goal.id}>
                 <div className="mt-2">{goal.name}</div>
                 <div className="bg-gray-400 rounded-full mt-1">
                   <div
@@ -214,7 +209,7 @@ const SavingGoal = () => {
               </tr>
             </thead>
             <tbody>
-              {formatedSavingGoals.map((savingGoal) => (
+              {savingGaols.map((savingGoal) => (
                 <tr key={savingGoal.savingId} className="hover:bg-slate-800">
                   <td className="px-4 py-2">{savingGoal.name}</td>
 

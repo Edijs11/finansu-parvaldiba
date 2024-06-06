@@ -1,6 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
-import { incomeShema } from '@/app/lib/shemas';
+import { incomeShema } from '../../models/shemas';
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -9,7 +9,7 @@ export async function GET() {
     const { getUser } = getKindeServerSession();
     const user = await getUser();
 
-    if (!user || user == null || !user.id) {
+    if (!user?.id) {
       throw new Error('Something went wrong with authentication' + user);
     }
 
@@ -66,7 +66,6 @@ export async function POST(req: NextRequest) {
 
     return new NextResponse(JSON.stringify(income), { status: 201 });
   } catch (error) {
-    console.log(error);
     return new NextResponse(JSON.stringify({ error: 'error posting income' }), {
       status: 500,
     });

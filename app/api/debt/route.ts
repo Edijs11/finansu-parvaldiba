@@ -1,6 +1,7 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
-import { debtShema } from '@/app/lib/shemas';
+import { formatDate } from '@/app/components/functions';
+import { debtShema } from '../../models/shemas';
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 export async function GET() {
@@ -25,6 +26,8 @@ export async function GET() {
       ...debt,
       saved: parseFloat(debt.saved),
       amount: parseFloat(debt.amount),
+      startDate: formatDate(debt.startDate),
+      endDate: formatDate(debt.endDate),
     }));
 
     return NextResponse.json(debtsWithParsedAmount);

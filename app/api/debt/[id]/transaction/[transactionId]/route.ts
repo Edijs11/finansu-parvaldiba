@@ -32,7 +32,6 @@ export async function DELETE({
 
     return NextResponse.json(deleteTransaction, { status: 200 });
   } catch (error) {
-    console.log(error);
     return NextResponse.json(
       { error: 'Error deleting transaction' },
       { status: 500 }

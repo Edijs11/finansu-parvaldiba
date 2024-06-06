@@ -1,7 +1,7 @@
 'use client';
 
 import { LoginLink, useKindeBrowserClient } from '@kinde-oss/kinde-auth-nextjs';
-import { email } from '../lib/shemas';
+import { email } from '../models/shemas';
 import { z } from 'zod';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -10,7 +10,9 @@ import axios from 'axios';
 type TContactFormShema = z.infer<typeof email>;
 
 const ContactUs = () => {
+  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
   const { isAuthenticated, isLoading } = useKindeBrowserClient();
+
   const {
     register,
     handleSubmit,
@@ -22,12 +24,12 @@ const ContactUs = () => {
   const onSubmit: SubmitHandler<TContactFormShema> = async (data) => {
     try {
       await new Promise((resolve) => setTimeout(resolve, 1000));
-      const email = await axios.post(`http://localhost:3000/api/send`, {
+      await axios.post(`${apiUrl}/api/send`, {
         subject: data.subject,
         type: data.type,
         message: data.message,
       });
-      reset(data);
+      reset();
     } catch (error) {
       console.error('Error sending email', error);
     }
@@ -42,16 +44,14 @@ const ContactUs = () => {
     <div className="mx-auto max-w-md mt-10">
       <h1 className="flex flex-col items-center text-3xl">Sazinies ar mums!</h1>
       <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col mt-6">
-        <label className="mt-4">Temats</label>
+        <div className="mt-4">Temats</div>
         <select {...register('type')} className="text-black rounded-sm">
           <option>Ieteikums</option>
           <option>Sūdzība</option>
           <option>Cits</option>
         </select>
 
-        <label className="mt-4" htmlFor="subject">
-          Virsraksts
-        </label>
+        <div className="mt-4">Virsraksts</div>
         <input
           id="subject"
           {...register('subject')}
@@ -63,9 +63,7 @@ const ContactUs = () => {
           <p className="text-red-500">{`${errors.subject.message}`}</p>
         )}
 
-        <label htmlFor="message" className="mt-4">
-          Apraksts
-        </label>
+        <div className="mt-4">Apraksts</div>
         <textarea
           id="message"
           {...register('message')}

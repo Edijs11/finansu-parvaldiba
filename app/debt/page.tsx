@@ -6,7 +6,7 @@ import Modal from '../components/modal';
 import { LoginLink, useKindeBrowserClient } from '@kinde-oss/kinde-auth-nextjs';
 import CreateDebtForm from './createDebtForm';
 import EditDebtForm from './editDebtForm';
-import { formatDate, precentageCalculation } from '../components/functions';
+import { precentageCalculation } from '../components/functions';
 import Link from 'next/link';
 import Frame from '../components/frame';
 import DeleteModal from '../components/deleteModal';
@@ -62,12 +62,6 @@ const Debt = () => {
     };
     fetchDebt();
   }, [newDebt]);
-
-  const formatedDebts = debts.map((debt) => ({
-    ...debt,
-    startDate: formatDate(debt.startDate),
-    endDate: formatDate(debt.endDate),
-  }));
 
   const createDebt = async (debt: CreateDebt) => {
     try {
@@ -139,6 +133,7 @@ const Debt = () => {
   };
 
   const debtPrecentage = debts.map((debt) => ({
+    id: debt.debtId,
     name: debt.name,
     precentage: precentageCalculation(debt.saved, debt.amount).toFixed(0),
   }));
@@ -173,8 +168,8 @@ const Debt = () => {
 
         {debts.length ? (
           <Frame title="Parādu progress">
-            {debtPrecentage.map((debt, index) => (
-              <div className="w-full" key={index}>
+            {debtPrecentage.map((debt) => (
+              <div className="w-full" key={debt.id}>
                 <div className="mt-2">{debt.name}</div>
                 <div className="bg-gray-400 rounded-full dark:bg-gray-600 mt-1">
                   <div
@@ -212,7 +207,7 @@ const Debt = () => {
               </tr>
             </thead>
             <tbody>
-              {formatedDebts.map((debt) => (
+              {debts.map((debt) => (
                 <tr key={debt.debtId} className="hover:bg-slate-800">
                   <td className="px-4 py-2">{debt.name}</td>
                   <td className="px-4 py-2">{debt.amount}€</td>

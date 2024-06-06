@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { expenseType } from '@prisma/client';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { expenseShema } from '../lib/shemas';
+import { expenseShema } from '../models/shemas';
 import { useEffect } from 'react';
 
 type TCreateExpenseShema = z.infer<typeof expenseShema>;
@@ -23,7 +23,7 @@ const EditExpenseForm = ({ updateExpense, onEditExpense }: any) => {
       try {
         reset(updateExpense);
       } catch {
-        new Error('could not get the expense');
+        throw new Error('could not get the expense');
       }
     };
     fetchData();
@@ -34,7 +34,7 @@ const EditExpenseForm = ({ updateExpense, onEditExpense }: any) => {
       await new Promise((resolve) => setTimeout(resolve, 1000));
       onEditExpense(data.expenseId, data);
     } catch {
-      new Error('could not submit expense');
+      throw new Error('could not submit expense');
     }
   };
 
@@ -85,8 +85,8 @@ const EditExpenseForm = ({ updateExpense, onEditExpense }: any) => {
       />
       <p className="mt-2">Tips:</p>
       <select {...register('type')} className="text-black rounded-sm">
-        {Object.values(expenseType).map((selectedType, index) => (
-          <option key={index} value={selectedType}>
+        {Object.values(expenseType).map((selectedType) => (
+          <option key={selectedType} value={selectedType}>
             {selectedType}
           </option>
         ))}

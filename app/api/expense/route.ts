@@ -1,6 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
-import { expenseShema } from '@/app/lib/shemas';
+import { expenseShema } from '../../models/shemas';
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
 import { NextRequest, NextResponse } from 'next/server';
 
@@ -64,7 +64,6 @@ export async function POST(req: NextRequest) {
     });
     return new NextResponse(JSON.stringify(expense), { status: 201 });
   } catch (error) {
-    console.log('create error:', error);
     return new NextResponse(
       JSON.stringify({ error: 'some error posting expense' }),
       { status: 500 }

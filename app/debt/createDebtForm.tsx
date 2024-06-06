@@ -3,7 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { debtShema } from '../lib/shemas';
+import { debtShema } from '../models/shemas';
 import { CreateDebt } from './page';
 
 interface CreateDebtProps {
@@ -28,7 +28,7 @@ const CreateDebtForm = ({ onCreateDebt }: CreateDebtProps) => {
       onCreateDebt(data);
       reset();
     } catch {
-      new Error('Error submiting debt');
+      throw new Error('Error submiting debt');
     }
   };
 

@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { expenseType } from '@prisma/client';
 import { SubmitHandler, useForm } from 'react-hook-form';
 import { z } from 'zod';
-import { expenseShema } from '../lib/shemas';
+import { expenseShema } from '../models/shemas';
 import { CreateExpense } from './page';
 
 interface CreateExpenseProps {
@@ -29,7 +29,7 @@ const CreateExpenseForm = ({ onCreateExpense }: CreateExpenseProps) => {
       await onCreateExpense(data);
       reset();
     } catch (error) {
-      new Error('Failed to submit');
+      throw new Error('Failed to submit expense');
     }
   };
 
@@ -78,8 +78,8 @@ const CreateExpenseForm = ({ onCreateExpense }: CreateExpenseProps) => {
       />
       <p className="mt-2">Tips:</p>
       <select {...register('type')} className="text-black rounded-sm">
-        {Object.values(expenseType).map((selectedType, index) => (
-          <option key={index} value={selectedType}>
+        {Object.values(expenseType).map((selectedType) => (
+          <option key={selectedType} value={selectedType}>
             {selectedType}
           </option>
         ))}

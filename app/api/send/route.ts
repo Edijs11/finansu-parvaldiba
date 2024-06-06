@@ -1,4 +1,3 @@
-import ContactEmail from '@/app/contactus/contactEmail';
 import prisma from '@/app/lib/db';
 import { email } from '@/app/lib/shemas';
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
@@ -22,6 +21,7 @@ export async function POST(req: NextRequest) {
     const userEmail = dbUser?.email;
     const body = await req.json();
     const emailInput = email.parse(body);
+    const description = emailInput.subject + '. ' + emailInput.message;
 
     if (
       !emailInput.type ||
@@ -35,17 +35,15 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const { data, error } = await resend.emails.send({
+    const { error } = await resend.emails.send({
       from: 'Acme <onboarding@resend.dev>',
       to: 'financemanagement004@gmail.com',
       reply_to: userEmail,
       subject: emailInput.type,
-      text: emailInput.message,
-      // react: ContactEmail({emailInput.subject, emailInput.message})
+      text: description,
     });
 
     if (error) {
-      console.log(error);
       return NextResponse.json(
         { message: 'Failed to send email', error },
         { status: 400 }

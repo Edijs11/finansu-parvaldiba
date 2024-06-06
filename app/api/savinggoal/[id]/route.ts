@@ -3,7 +3,7 @@ const { PrismaClient } = require('@prisma/client');
 const prisma = new PrismaClient();
 import { NextRequest, NextResponse } from 'next/server';
 import { getKindeServerSession } from '@kinde-oss/kinde-auth-nextjs/server';
-import { savingGoalShema } from '@/app/lib/shemas';
+import { savingGoalShema } from '../../../models/shemas';
 
 export async function GET(
   req: NextRequest,
